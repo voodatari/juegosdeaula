@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=ef4394b6-48f5-4c29-8e18-e5edd32bf941
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Juegos de aula · Trivial y Rosco</title>
+<meta name="description" content="Trivial por equipos y Rosco tipo pasapalabra para proyectar en clase.">
+<meta name="theme-color" content="#121A2E">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏆</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/base.css?v=20260923k">
+<link rel="stylesheet" href="css/juegos.css?v=20260923k">
+<script src="js/tema.js?v=20260923k"></script>
+<script src="js/anim.js?v=20260923k"></script>
+<script src="js/rendimiento.js?v=20260923k"></script>
+</head>
+<body>
+<div class="fondo"><i></i><i></i><i></i></div>
+
+<!-- en el móvil no se puede jugar: la web es para proyectar -->
+<div class="soloPizarra" id="soloPizarra" hidden>
+  <div class="caja-movil">
+    <div class="icono">🖥️</div>
+    <h1>Esto se proyecta en clase</h1>
+    <p><b>Juegos de aula</b> está pensado para la pizarra digital o el proyector: los cuatro
+      equipos tienen que ver el marcador y las respuestas a la vez.</p>
+    <p class="chico">Ábrelo en el ordenador de clase y a jugar. Desde el móvil se vería
+      diminuto y los botones no darían juego.</p>
+    <button class="btn" id="movilSeguir">Entrar igualmente</button>
+  </div>
+</div>
+<!-- focos: viven fuera de las vistas para poder encenderse también
+     en la pantalla final del trivial y del rosco -->
+<div class="focos" id="focos" aria-hidden="true"></div>
+
+<div class="escenario">
+
+  <!-- ==================== MENÚ ==================== -->
+  <section class="vista activa" id="vistaMenu">
+    <!-- cuenta: «Entrar» y «Registrarse», o el usuario con su menú -->
+    <div class="cuentaBar" id="cuentaBar"></div>
+    <div class="menu">
+      <div class="cabecera">
+        <h1 id="tituloGrande">Juegos de <em>aula</em></h1>
+        <p id="lema">Elige el concurso que vas a jugar hoy</p>
+      </div>
+
+      <!-- paso 1: elegir juego -->
+      <div id="paso1" class="paso">
+        <div class="eleccion">
+          <button class="ficha" data-juego="trivial" style="--tinte:#6E5BE8;--tinte2:#8B7CF6">
+            <span class="tecla">1</span>
+            <span class="icono">🏆</span>
+            <b>Trivial por equipos</b>
+            <span>Tipo test para los cuatro equipos a la vez, y preguntas escritas para rematar</span>
+          </button>
+          <button class="ficha" data-juego="rosco" style="--tinte:#2BC4B4;--tinte2:#189B90">
+            <span class="tecla">2</span>
+            <span class="icono">🔵</span>
+            <b>Rosco pasapalabra</b>
+            <span>Un rosco para cada equipo, con rachas, bote de tiempo y pasapalabra</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- paso 2: banco y a jugar -->
+      <div id="paso2" class="detalle oculto">
+        <button class="volver" id="volver">← Elegir otro juego</button>
+        <h2 id="dTitulo"></h2>
+        <div class="viz" id="dViz"></div>
+        <p class="pitch" id="dPitch"></p>
+        <div class="filaEq">
+          <span class="etEq">Equipos</span>
+          <div class="numEq" id="dEquipos" role="group" aria-label="Número de equipos">
+            <button type="button" data-n="1">1</button>
+            <button type="button" data-n="2">2</button>
+            <button type="button" data-n="3">3</button>
+            <button type="button" data-n="4">4</button>
+          </div>
+          <span class="pistaEq" id="dEqPista"></span>
+        </div>
+        <div class="filaSel">
+          <select class="banco" id="dBanco" aria-label="Banco de preguntas"></select>
+          <button class="jugar" id="dJugar">Jugar →</button>
+        </div>
+        <div class="filaImp">
+          <button class="btnHoja oculto" id="dHoja">🖨 Imprimir hoja de respuestas</button>
+          <button class="btnHoja oculto" id="dGuia">📄 PDF con las soluciones</button>
+          <button class="btnHoja oculto" id="dTirada">🎲 Cambiar las preguntas aleatorias</button>
+          <button class="btnHoja" id="dEnlace">🔗 Copiar enlace de juego</button>
+        </div>
+      </div>
+
+      <div class="barraabajo">
+        <button class="chip js-importar">⬆ Gestionar Preguntas</button>
+        <button class="chip js-aj" title="Aspecto y sonido" aria-label="Aspecto y sonido">🎨</button>
+        <button class="chip js-mus" title="Música" aria-label="Música">♪</button>
+        <button class="chip js-sfx" title="Efectos de sonido" aria-label="Efectos de sonido">🔊</button>
+        <button class="chip js-full" title="Pantalla completa" aria-label="Pantalla completa">⤢</button>
+        <span class="estado"><span class="punto" id="punto"></span><span id="estadoTxt">Comprobando…</span></span>
+      </div>
+
+      <p class="creditos">Creado por <b>Claude Opus 5</b> y <b>Daniel Vera</b></p>
+    </div>
+
+
+    <!-- ---- preguntas aleatorias ---- -->
+    <div class="capa" id="capaAleatorio">
+      <div class="caja caja-izq alea">
+        <h2>🎲 Preguntas aleatorias</h2>
+        <p class="sub" id="aleSub"></p>
+        <div class="aleFila">
+          <div class="aleEt"><b>Tipo test</b><span id="aleDispT"></span></div>
+          <div class="contador">
+            <button type="button" data-paso="t" data-d="-1" aria-label="Una pregunta test menos">−</button>
+            <input id="aleT" inputmode="numeric" aria-label="Preguntas tipo test" autocomplete="off">
+            <button type="button" data-paso="t" data-d="1" aria-label="Una pregunta test más">+</button>
+          </div>
+        </div>
+        <div class="aleFila">
+          <div class="aleEt"><b>Respuesta escrita</b><span id="aleDispE"></span></div>
+          <div class="contador">
+            <button type="button" data-paso="e" data-d="-1" aria-label="Una pregunta escrita menos">−</button>
+            <input id="aleE" inputmode="numeric" aria-label="Preguntas escritas" autocomplete="off">
+            <button type="button" data-paso="e" data-d="1" aria-label="Una pregunta escrita más">+</button>
+          </div>
+        </div>
+        <p class="aviso mal oculto" id="aleMal"></p>
+        <p class="tenue aleTotal" id="aleTotal"></p>
+        <div class="capa-pie">
+          <button class="btn" id="aleNo">Cancelar</button>
+          <button class="btn principal" id="aleSi">✔ Usar estas preguntas</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== TRIVIAL ==================== -->
+  <section class="vista" id="vistaTrivial">
+    <div class="cargando" id="cargando">
+      <div class="spinner"></div>
+      <div id="cargandoTxt">Cargando las preguntas…</div>
+    </div>
+
+    <div class="escena">
+      <div class="topbar">
+        <div class="marca"><b id="titulo">Trivial</b><span id="subtitulo">por equipos</span></div>
+        <div class="herramientas">
+          <button class="chip js-menu">← Menú</button>
+          <button class="chip js-aj">🎨</button>
+          <button class="chip js-ancho" title="Aprovechar toda la pantalla">⛶</button>
+          <button class="chip js-full" title="Pantalla completa">⤢</button>
+          <button class="chip" id="resetBtn" title="Reiniciar">↺</button>
+        </div>
+      </div>
+
+      <div class="marcador" id="marcador"></div>
+
+      <div class="tarjeta" style="flex:1">
+        <div class="cabeza">
+          <div class="numpreg" id="numpreg"></div>
+          <div class="etiqueta test" id="etiqueta"></div>
+        </div>
+        <div class="barra"><i id="barra"></i></div>
+        <div class="pregunta" id="pregunta"></div>
+
+        <div class="opciones" id="opciones"></div>
+
+        <div class="zonaEscrita oculto" id="zonaEscrita">
+          <div class="solucion tapada" id="solucion">
+            <div class="pista" id="pista">PULSA «MOSTRAR RESPUESTA»</div>
+            <div class="val" id="valor"></div>
+          </div>
+          <div class="premios" id="premios"></div>
+        </div>
+
+        <div class="turnos" id="turnos"></div>
+        <div class="pie">
+          <button class="btn" id="anterior">← Anterior</button>
+          <button class="btn principal" id="siguiente">Siguiente →</button>
+        </div>
+        <div class="atajos" id="atajosTrivial">
+          <kbd>A</kbd><kbd>B</kbd><kbd>C</kbd><kbd>D</kbd> responder ·
+          <kbd>←</kbd><kbd>→</kbd> navegar ·
+          <kbd>1</kbd>–<kbd>4</kbd> dar punto en las escritas
+        </div>
+      </div>
+    </div>
+
+    <div class="capa" id="capa"><div class="caja" id="cajaTexto"></div></div>
+  </section>
+
+  <!-- ==================== ROSCO ==================== -->
+  <section class="vista" id="vistaRosco">
+    <div class="cargando" id="rcargando">
+      <div class="spinner"></div>
+      <div>Cargando los roscos…</div>
+    </div>
+
+    <div class="escena">
+      <div class="topbar">
+        <div class="marca"><b id="rtitulo">Rosco</b><span id="rsubtitulo">un rosco por equipo · modo racha</span></div>
+        <div class="herramientas">
+          <button class="chip js-menu">← Menú</button>
+          <button class="chip" id="rcfgBtn">⏱ Tiempos</button>
+          <button class="chip js-aj">🎨</button>
+          <button class="chip js-ancho" title="Aprovechar toda la pantalla">⛶</button>
+          <button class="chip js-full" title="Pantalla completa">⤢</button>
+          <button class="chip" id="rresetBtn" title="Reiniciar">↺</button>
+        </div>
+      </div>
+
+      <div class="marcador" id="rmarcador"></div>
+
+      <div class="zonaRosco">
+        <div class="roscocaja" id="rroscocaja">
+          <div class="rosco" id="rrosco">
+            <div class="centro">
+              <div class="gr" id="rletraGrande">A</div>
+              <div class="pie" id="rpieCentro"></div>
+              <div class="rachaG" id="rrachaG"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="phead">
+            <div class="turnoEt" id="rturnoEt">Turno: Equipo 1</div>
+          </div>
+          <div class="relojes oculto" id="rrelojes">
+            <div class="rel" id="rrelBote"><b id="rboteVal">—</b><span>BOTE DEL EQUIPO</span></div>
+            <div class="rel" id="rrelLim"><b id="rlimVal">—</b><span>PARA ESTA LETRA</span></div>
+          </div>
+          <div class="zonaDef">
+            <div class="modo" id="rmodo">EMPIEZA POR</div>
+            <div class="definicion" id="rdefinicion"></div>
+          </div>
+
+          <!-- la caja de la solución ES el botón de revelar -->
+          <button class="sol tapada" id="rsol">
+            <span class="hint" id="rsolHint">👁 PULSA PARA VER LA SOLUCIÓN · PARA EL TIEMPO</span>
+            <span class="val" id="rsolVal"></span>
+          </button>
+
+          <div class="acciones">
+            <button class="acc si" id="rokBtn">ACIERTO<small>encadena y sigue</small></button>
+            <button class="acc no" id="rnoBtn">FALLO<small>pasa el turno</small></button>
+            <button class="acc pp" id="rppBtn">PASAPALABRA<small>queda pendiente</small></button>
+          </div>
+          <div class="atajos">
+            <kbd>A</kbd> acierto · <kbd>F</kbd> fallo · <kbd>espacio</kbd> pasapalabra · <kbd>V</kbd> ver solución
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="capa" id="rcapa"><div class="caja" id="rcajaTexto"></div></div>
+
+    <div class="capa" id="rcapaCfg"><div class="caja cfg">
+      <h2>⏱ Tiempos</h2>
+      <label class="linea"><input type="checkbox" id="rcBote"> Bote de tiempo por equipo</label>
+      <div class="linea sub" id="rsubBote">
+        <span>Cada equipo dispone de</span>
+        <input type="number" id="rcBoteSeg" min="30" max="900" step="15">
+        <span>segundos en total, que solo corren en su turno.</span>
+      </div>
+      <label class="linea"><input type="checkbox" id="rcLim"> Límite de tiempo por pregunta</label>
+      <div class="linea sub" id="rsubLim">
+        <span>Cada letra se responde en</span>
+        <input type="number" id="rcLimSeg" min="5" max="180" step="5">
+        <span>segundos. Al agotarse</span>
+        <select id="rcLimAcc">
+          <option value="pp">pasa palabra y sigue el turno siguiente</option>
+          <option value="no">cuenta como fallo</option>
+        </select>
+      </div>
+      <p class="nota">Puedes cambiarlo en mitad de la partida. Cambiar la duración del bote reinicia
+        los botes de los cuatro equipos. Sin ningún límite, un equipo fuerte puede encadenar quince
+        letras mientras los otros tres esperan: conviene activar al menos el bote.</p>
+      <div class="dos">
+        <button class="btn" id="rcfgCancel">Cancelar</button>
+        <button class="btn principal" id="rcfgOk">Aplicar</button>
+      </div>
+    </div></div>
+  </section>
+
+  <!-- ==================== PREGUNTAS ==================== -->
+  <section class="vista" id="vistaImportar">
+    <div class="pagina">
+      <div class="cab">
+        <div>
+          <h1 id="impTitulo">⬆ Mis bancos de preguntas</h1>
+          <p id="impSub">Aquí añades preguntas nuevas y repasas las que ya tienes.</p>
+        </div>
+        <div class="nav">
+          <button class="chip js-menu">← Menú</button>
+          <button class="chip js-aj">🎨 Aspecto</button>
+        </div>
+      </div>
+
+      <!-- ---- selector de sección: solo se ve una ---- -->
+      <div class="secciones">
+        <button class="pestana act" data-sec="bancos">🗒 Mis bancos</button>
+        <button class="pestana" data-sec="anadir">📥 Añadir o crear</button>
+        <button class="pestana" data-sec="ia">🤖 Crear con IA</button>
+        <button class="pestana soloAdmin" data-sec="usuarios">👥 Usuarios</button>
+      </div>
+
+      <!-- ---- lista ---- -->
+      <section class="tarjeta" id="secBancos">
+        <div class="cabTarjeta">
+          <h2 id="tituloLista">🗒 Mis bancos</h2>
+          <div class="grupo">
+            <button class="btn soloAdmin" id="btnMigrar" title="Copia al banco general los bancos de la hoja de Google de la versión anterior">⇪ Traer de la hoja antigua</button>
+            <button class="btn" id="btnProbar">🔄 Actualizar</button>
+          </div>
+        </div>
+        <div id="estadoConex" class="aviso ojo">Comprobando la conexión…</div>
+        <div class="filaPestanas">
+          <div class="pestanas">
+            <button class="pestana act" data-lista="trivial">🏆 Trivial</button>
+            <button class="pestana" data-lista="rosco">🔵 Rosco</button>
+          </div>
+        </div>
+        <div class="listaBancos scrollable" id="listaBancos"></div>
+        <p class="tenue" id="pieLista"></p>
+      </section>
+
+      <!-- ---- añadir: crear desde cero o importar un CSV ---- -->
+      <section class="tarjeta oculto" id="secAnadir">
+        <div class="cabTarjeta">
+          <h2>📥 Añadir un banco</h2>
+          <button class="ayuda" id="btnFormato" title="Cómo es el formato del CSV"
+                  aria-label="Cómo es el formato del CSV">?</button>
+        </div>
+
+        <div class="crearCero">
+          <div class="crearTexto">
+            <b>✨ Créalo desde cero</b>
+            <span class="tenue">con el editor visual, pregunta a pregunta</span>
+          </div>
+          <div class="grupo">
+            <button class="btn principal" data-crear="trivial">🏆 Nuevo trivial</button>
+            <button class="btn principal" data-crear="rosco">🔵 Nuevo rosco</button>
+          </div>
+        </div>
+
+        <div class="separaO"><span>o impórtalo en CSV</span></div>
+
+        <div id="panelPegar">
+          <p class="tenue">Pega lo que te ha dado la IA, o arrastra un archivo <b>.csv</b>. La primera línea
+            (<b>TRIVIAL</b> o <b>ROSCO</b>) dice a qué juego va; puede haber varios bancos seguidos.</p>
+
+          <div id="filaNombre">
+            <label for="nombreBanco" style="font-weight:800;font-size:13.5px">Nombre del banco (como aparecerá en el menú)</label>
+            <input type="text" id="nombreBanco" class="campo"
+                   placeholder="Se rellena solo con el título del CSV; puedes cambiarlo">
+          </div>
+
+          <div class="soltar" id="soltar">Arrastra aquí un archivo <b>.csv</b> · o pégalo en el cuadro</div>
+          <textarea id="entrada" spellcheck="false" autocomplete="off"
+            placeholder="TRIVIAL;Repaso de Ciencias&#10;TEST;¿Cuál es la capital de Portugal?;Oporto;Lisboa;Madrid;Braga;B&#10;ESCRITA;¿Cómo se llama el erizo azul de los videojuegos?;Sonic"></textarea>
+
+          <div class="botones reparto">
+            <div class="grupo">
+              <button class="btn principal" id="btnValidar">Comprobar</button>
+              <button class="btn" id="btnGuardar" disabled>Guardar</button>
+              <button class="btn" id="btnEditarImp" disabled>✏️ Abrir en el editor</button>
+            </div>
+            <div class="grupo">
+              <button class="btn" id="btnLimpiar">Vaciar</button>
+            </div>
+          </div>
+
+
+          <div id="previa"></div>
+        </div>
+      </section>
+
+    <!-- ---- ventana: resultado de comprobar o de guardar ---- -->
+    <div class="capa" id="capaAviso">
+      <div class="caja caja-izq cajaAviso">
+        <h2 id="avisoTit">📋 Comprobación</h2>
+        <div class="avisoCuerpo scrollable" id="resultado"></div>
+        <div class="botones" style="margin-top:14px">
+          <button class="btn principal" id="avisoCerrar">Cerrar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---- ventana: cómo es el formato del CSV ---- -->
+    <div class="capa" id="capaFormato">
+      <div class="caja caja-izq">
+        <h2>📄 Cómo es el formato</h2>
+        <div class="formatoCsv scrollable">
+            
+            <p>Una línea por elemento, con los campos separados por punto y coma. La primera palabra de cada
+              línea dice qué es. Si un texto lleva un <code>;</code> dentro, va entre comillas.</p>
+            <pre>TRIVIAL;Título del banco
+TEST;Pregunta;opción A;opción B;opción C;opción D;letra correcta
+ESCRITA;Pregunta;respuesta</pre>
+            <pre>ROSCO;Título del banco
+SEGUNDOS;150                     (opcional: bote de cada equipo)
+EQUIPO;Equipo 1
+LETRA;A;EMPIEZA;definición;solución
+LETRA;Ñ;CONTIENE;definición;solución
+EQUIPO;Equipo 2
+…</pre>
+            <p class="tenue">Se puede abrir y editar con Excel. Las líneas que empiezan por # se ignoran.</p>
+          
+        </div>
+        <div class="botones" style="margin-top:14px">
+          <button class="btn principal" id="fmtCerrar">Entendido</button>
+        </div>
+      </div>
+    </div>
+
+      <!-- ---- generar con una IA ---- -->
+      <section class="tarjeta oculto" id="secIA">
+        <h2>🤖 Generar las preguntas con una IA</h2>
+        <div id="panelIA">
+          <p>Pídele el banco entero a una IA con uno de estos prompts: te lo devolverá en CSV, línea a
+            línea, y solo hay que pegarlo en <b>📥 Añadir o crear</b>. Cambia lo que va
+            <code>ENTRE CORCHETES</code> (curso, temas, número de preguntas…).</p>
+          <div class="botones reparto">
+            <div class="grupo">
+              <button class="btn principal" data-prompt="trivial">🏆 Prompt para el Trivial</button>
+              <button class="btn principal" data-prompt="rosco">🔵 Prompt para el Rosco</button>
+            </div>
+            <div class="grupo">
+              <button class="btn" id="btnComoVa">💡 ¿Cómo funciona?</button>
+            </div>
+          </div>
+          <div id="zonaPrompt" class="oculto">
+            <textarea id="promptTexto" spellcheck="false"
+              aria-label="Texto del prompt, se puede editar"></textarea>
+            <!-- una sola fila: nota a la izquierda, «Copiar» en el centro y
+                 «Restaurar» a la derecha. Así el botón de copiar queda con el
+                 mismo aire por arriba (hasta la caja del prompt) que por abajo
+                 (hasta las cajas de las IA) -->
+            <div class="filaCopiar">
+              <span class="tenue" id="promptNota">Puedes editarlo: los cambios se guardan solos.</span>
+              <button class="btn principal" id="btnCopiarPrompt">📋 Copiar el prompt</button>
+              <button class="mini" id="btnRestaurar">↺ Restaurar el prompt</button>
+            </div>
+
+            <div class="dosIA">
+              <div class="grupoIA">
+                <p class="tenue">↗ <b>Con el prompt ya escrito</b><br>solo hay que enviarlo</p>
+                <div class="botones centrado" style="margin-top:0">
+                  <button class="btn ia" data-ia="chatgpt">ChatGPT</button>
+                  <button class="btn ia" data-ia="claude">Claude</button>
+                </div>
+              </div>
+              <div class="grupoIA">
+                <p class="tenue">📋 <b>Hay que pegarlo a mano</b><br>ábrelas y pega con Ctrl+V</p>
+                <div class="botones centrado" style="margin-top:0">
+                  <button class="btn ia" data-ia="gemini">Gemini</button>
+                  <button class="btn ia" data-ia="deepseek">DeepSeek</button>
+                </div>
+              </div>
+            </div>
+            <p class="aviso oculto" id="promptAviso"></p>
+            <p class="tenue" style="text-align:center;margin:0">
+              En las cuatro hay que tener la sesión iniciada allí.</p>
+          </div>
+          <div id="zonaComo" class="oculto">
+            <ol>
+              <li>Copia el prompt y pégaselo a la IA (Claude, ChatGPT, Gemini…). Cambia lo que está
+                <code>ENTRE CORCHETES</code>: curso, temas, número de preguntas o de equipos…</li>
+              <li>La IA contesta con un bloque de texto que empieza por <code>TRIVIAL;</code> o <code>ROSCO;</code>.
+                Cópialo entero (casi todas tienen un botón «Copiar» en la esquina del bloque).</li>
+              <li>Ve a <b>📥 Añadir o crear</b>, pégalo y pulsa <b>Comprobar</b>. Si alguna línea falla, sale su
+                número: pégale los mensajes a la IA tal cual, o abre el banco en el <b>✏️ editor</b> y corrígelo allí.</li>
+              <li>Con todo en verde, pulsa <b>Guardar</b>. Ya aparece en el menú de juego.</li>
+            </ol>
+            <p class="tenue">Repasa siempre las respuestas antes de clase: las IA fallan más de lo que
+              parece con datos de actualidad, récords y nombres propios poco comunes.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---- usuarios (solo administrador) ---- -->
+      <section class="tarjeta oculto soloAdmin" id="secUsuarios">
+        <div class="cabTarjeta">
+          <h2 id="usTitulo">👥 Usuarios</h2>
+          <div class="grupo">
+            <button class="btn oculto" id="usVolver">← Todos los usuarios</button>
+            <button class="btn" id="usRecargar">🔄 Actualizar</button>
+          </div>
+        </div>
+        <div id="usEstado" class="aviso ojo oculto"></div>
+        <div id="usVista">
+          <div class="listaBancos scrollable alta" id="usLista"></div>
+        </div>
+        <div id="usDetalle" class="oculto">
+          <div class="barraSel">
+            <label class="selTodos"><input type="checkbox" id="usTodos"> Todos</label>
+            <span class="tenue" id="usCuenta">Ninguno seleccionado</span>
+            <div class="acc">
+              <button class="mini" id="usRenombrar" disabled>🏷 Renombrar</button>
+              <button class="mini" id="usCopiar" disabled>⇪ Copiar al banco general</button>
+              <button class="mini rojo" id="usBorrar" disabled>🗑 Borrar</button>
+            </div>
+          </div>
+          <div class="listaBancos scrollable alta" id="usBancos"></div>
+        </div>
+        <p class="tenue" id="usPie"></p>
+      </section>
+    </div>
+
+  </section>
+
+
+  <!-- ==================== EDITOR ==================== -->
+  <!-- lo construye js/editor.js la primera vez que se abre -->
+  <section class="vista" id="vistaEditor"></section>
+
+</div>
+
+<script src="js/audio.js?v=20260923k"></script>
+<script src="js/dialogo.js?v=20260923k"></script>
+<script src="js/fx.js?v=20260923k"></script>
+<script src="js/fondo.js?v=20260923k"></script>
+<script src="js/hoja.js?v=20260923k"></script>
+<script src="js/vendor/supabase.js?v=2.116.0"></script>
+<script src="js/config.js?v=20260923k"></script>
+<script src="js/nube.js?v=20260923k"></script>
+<script src="js/csv.js?v=20260923k"></script>
+<script src="js/store.js?v=20260923k"></script>
+<script src="js/ajustes.js?v=20260923k"></script>
+<script src="js/trivial.js?v=20260923k"></script>
+<script src="js/rosco.js?v=20260923k"></script>
+<script src="js/importar.js?v=20260923k"></script>
+<script src="js/editor.js?v=20260923k"></script>
+<script src="js/admin.js?v=20260923k"></script>
+<script src="js/cuenta.js?v=20260923k"></script>
+<script src="js/menu.js?v=20260923k"></script>
+<script src="js/app.js?v=20260923k"></script>
+</body>
+</html>

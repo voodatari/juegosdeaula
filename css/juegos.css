@@ -1,0 +1,1535 @@
+/* =========================================================
+   Juegos de aula · estilos de las tres vistas
+   (el menú, el trivial y el rosco viven en la misma página:
+    así la música no se corta al pasar de una a otra y las
+    transiciones pueden animarse de verdad)
+   ========================================================= */
+
+/* ---------- escenario y transiciones entre vistas ---------- */
+.escenario{position:relative;min-height:100vh}
+/* la escena de juego se centra en la pantalla: en monitores altos o a
+   pantalla completa ya no se queda pegada arriba (los márgenes automáticos
+   centran sin recortar cuando el contenido es más alto que la ventana) */
+#vistaTrivial.activa,#vistaRosco.activa{display:flex}
+#vistaTrivial .escena,#vistaRosco .escena{margin:auto}
+.vista{position:absolute;inset:0;overflow:auto;opacity:0;pointer-events:none;visibility:hidden;
+  transform:var(--vista-entra);filter:blur(var(--vista-blur));
+  transition:opacity var(--dur-vista) var(--ease-vista),
+             transform var(--dur-vista) var(--ease-vista),
+             filter var(--dur-vista) var(--ease-vista),
+             visibility 0s linear var(--dur-vista)}
+.vista.activa{opacity:1;pointer-events:auto;visibility:visible;transform:none;filter:none;
+  position:relative;height:100dvh;overflow:auto;-webkit-overflow-scrolling:touch;
+  transition:opacity var(--dur-vista) var(--ease-vista),
+             transform var(--dur-vista) var(--ease-vista),
+             filter var(--dur-vista) var(--ease-vista),
+             visibility 0s linear 0s}
+.vista.saliendo{opacity:0;visibility:visible;transform:var(--vista-sale);filter:blur(var(--vista-blur))}
+
+/* ===================== MENÚ ===================== */
+
+.menu{min-height:100vh;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:26px 16px 18px;gap:22px}
+.cabecera{text-align:center;color:#fff}
+.cabecera h1{font-size:clamp(30px,6vw,60px);line-height:1.05;letter-spacing:.5px;
+  text-shadow:0 6px 30px rgba(0,0,0,.35);animation:bajaEntra .5s cubic-bezier(.2,1.1,.3,1)}
+.cabecera h1 em{font-style:normal;color:var(--oro)}
+.cabecera p{opacity:.8;font-size:clamp(13px,1.7vw,17px);margin-top:4px}
+@keyframes bajaEntra{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:none}}
+
+/* ---------- paso 1: elegir juego ---------- */
+.eleccion{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:18px;
+  width:min(860px,94vw)}
+.ficha{position:relative;overflow:hidden;border:0;cursor:pointer;font-family:inherit;color:#fff;
+  border-radius:var(--r-xl);padding:30px 22px;text-align:center;display:flex;flex-direction:column;
+  align-items:center;gap:9px;background:linear-gradient(145deg,var(--tinte),var(--tinte2));
+  box-shadow:0 20px 45px rgba(10,6,45,.42);
+  opacity:0;transform:translateY(20px);animation:sube .42s cubic-bezier(.2,1,.3,1) forwards;
+  transition:transform .18s cubic-bezier(.2,.9,.3,1),box-shadow .18s}
+.ficha:nth-child(2){animation-delay:.08s}
+@keyframes sube{to{opacity:1;transform:none}}
+.ficha:hover{transform:translateY(-6px) scale(1.015);box-shadow:0 28px 55px rgba(10,6,45,.5)}
+.ficha:active{transform:translateY(-2px) scale(.99)}
+.ficha::after{content:"";position:absolute;inset:auto -40% -70% -40%;height:190px;border-radius:50%;
+  background:#fff;opacity:.12;transform:translateY(24px);transition:transform .25s ease}
+.ficha:hover::after{transform:translateY(4px)}
+.ficha .icono{font-size:clamp(44px,6vw,64px);line-height:1;filter:drop-shadow(0 6px 14px rgba(0,0,0,.3));
+  transition:transform .2s cubic-bezier(.2,1.4,.4,1)}
+.ficha:hover .icono{transform:scale(1.1) rotate(-4deg)}
+.ficha b{font-size:clamp(21px,2.8vw,28px);letter-spacing:.3px}
+.ficha span{font-size:13.5px;opacity:.9;line-height:1.4;max-width:30ch}
+.ficha .tecla{position:absolute;top:12px;right:14px;background:rgba(255,255,255,.22);
+  border-radius:8px;padding:2px 9px;font-size:12.5px;font-weight:800}
+.pistaTeclas{color:#fff;opacity:.72;font-size:13px;text-align:center}
+
+/* ---------- paso 2: el juego elegido ---------- */
+.detalle{width:min(560px,94vw);background:var(--panel);border-radius:var(--r-xl);padding:22px;
+  box-shadow:var(--sombra);display:flex;flex-direction:column;gap:13px;position:relative;overflow:hidden}
+.detalle.reentra{animation:entraDetalle .26s cubic-bezier(.2,1,.3,1)}
+@keyframes entraDetalle{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
+.detalle h2{font-size:clamp(21px,2.7vw,28px);display:flex;align-items:center;gap:9px}
+.detalle .pitch{color:var(--muted);font-size:14.5px;line-height:1.5}
+.detalle .datos{display:flex;gap:7px;flex-wrap:wrap}
+.pill{background:var(--soft);border:1px solid var(--line);border-radius:999px;
+  padding:4px 11px;font-size:11.5px;font-weight:700;color:var(--ink)}
+
+.viz{height:118px;border-radius:var(--r-m);background:var(--soft);border:1px solid var(--line);
+  position:relative;overflow:hidden;flex:0 0 auto}
+.miniopts{position:absolute;inset:11px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.miniopt{border-radius:10px;background:var(--panel);border:2px solid var(--line);display:flex;
+  align-items:center;gap:7px;padding:0 10px;font-size:11.5px;font-weight:700;color:var(--muted);
+  transition:transform .2s,border-color .2s,background .2s,color .2s}
+.miniopt b{width:21px;height:21px;border-radius:6px;background:var(--oc);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:11px;flex:0 0 auto}
+.miniopt.hit{border-color:var(--verde);background:color-mix(in srgb,var(--verde) 14%,var(--panel));color:var(--verde);transform:scale(1.04)}
+.minirosco{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.minicirc{position:relative;width:104px;height:104px}
+.minil{position:absolute;width:20px;height:20px;border-radius:50%;background:var(--panel);
+  border:2px solid var(--line);color:var(--muted);font-size:10px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;transform:translate(-50%,-50%);
+  transition:background .25s,color .25s,border-color .25s}
+.minil.on{background:var(--turquesa);border-color:var(--turquesa);color:#fff}
+.minicentro{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  font-size:27px;font-weight:800;color:var(--ink)}
+
+/* ---------- cuántos equipos juegan ---------- */
+.filaEq{display:flex;align-items:center;gap:11px;flex-wrap:wrap}
+.filaEq .etEq{font-size:13px;font-weight:800;color:var(--muted);letter-spacing:.3px;
+  text-transform:uppercase}
+.numEq{display:flex;gap:6px;background:var(--soft);border-radius:999px;padding:4px}
+.numEq button{width:38px;height:34px;border:0;border-radius:999px;background:transparent;
+  font-family:inherit;font-weight:800;font-size:15px;color:var(--muted);cursor:pointer;
+  transition:transform var(--rapido),background var(--rapido),color var(--rapido)}
+.numEq button:hover{transform:translateY(-2px);color:var(--ink)}
+.numEq button.sel{background:linear-gradient(135deg,var(--tinte),var(--tinte2));color:#fff;
+  box-shadow:0 6px 14px rgba(0,0,0,.2)}
+.filaEq .pistaEq{flex:1;min-width:150px;font-size:12px;color:var(--muted);line-height:1.35}
+.filaImp{display:flex;gap:9px;flex-wrap:wrap}
+.filaImp .btnHoja{flex:1;min-width:190px}
+.filaImp .btnHoja.oculto{display:none}
+
+.filaSel{display:flex;gap:9px;align-items:center}
+select.banco{flex:1;min-width:0;padding:12px;border:2px solid var(--line);border-radius:var(--r-l);
+  font-family:inherit;font-size:14px;font-weight:700;color:var(--ink);background:var(--panel);cursor:pointer}
+select.banco:focus{outline:none;border-color:var(--violeta)}
+.jugar{border:0;border-radius:var(--r-l);padding:14px 24px;font-family:inherit;font-weight:800;
+  font-size:16px;color:#fff;cursor:pointer;background:linear-gradient(135deg,var(--tinte),var(--tinte2));
+  box-shadow:0 10px 24px rgba(0,0,0,.2);transition:transform var(--rapido),filter var(--rapido);
+  display:flex;align-items:center;gap:8px;text-align:center}
+.jugar:hover{transform:translateY(-2px);filter:brightness(1.07)}
+.jugar:active{transform:scale(.97)}
+/* hoja de respuestas: un botón discreto bajo el selector de banco */
+.btnHoja{width:100%;border:2px dashed var(--line);background:var(--panel);color:var(--ink);
+  border-radius:var(--r-l);padding:10px 14px;font-family:inherit;font-weight:800;font-size:13.5px;
+  cursor:pointer;transition:transform var(--rapido),border-color var(--rapido),background var(--rapido)}
+.btnHoja:hover{transform:translateY(-2px);border-color:var(--violeta);background:var(--soft)}
+.btnHoja:disabled{opacity:.5;cursor:progress;transform:none}
+
+.volver{align-self:flex-start;border:0;background:none;font-family:inherit;font-weight:800;
+  font-size:13px;color:var(--muted);cursor:pointer;padding:2px 0;transition:color var(--rapido);text-align:left}
+.volver:hover{color:var(--violeta)}
+
+/* sin la línea de «pulsa 1 o 2», esta barra recupera ese aire */
+.barraabajo{display:flex;gap:9px;flex-wrap:wrap;justify-content:center;align-items:center;
+  margin-top:8px}
+.estado{color:#fff;font-size:12.5px;opacity:.85;display:flex;align-items:center;gap:7px}
+.punto{width:9px;height:9px;border-radius:50%;background:var(--muted);box-shadow:0 0 0 3px rgba(255,255,255,.14)}
+.punto.ok{background:#3BE08A}.punto.mal{background:#FF7A8A}.punto.local{background:var(--oro)}
+
+.caja label{display:block;text-align:left;font-weight:700;font-size:13px;margin:12px 0 5px}
+.caja input[type=url]{width:100%;padding:11px 12px;border:2px solid var(--line);
+  border-radius:var(--r-l);font-family:inherit;font-size:13.5px;background:var(--panel);color:var(--ink)}
+.caja .ayuda{text-align:left;font-size:12.5px;color:var(--muted);line-height:1.5;margin-top:8px}
+.caja .acciones{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:16px}
+.caja a{color:var(--violeta);font-weight:700}
+
+/* ===================== TRIVIAL ===================== */
+
+.cabeza{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.pregunta{font-size:clamp(19px,2.7vw,33px);font-weight:700;line-height:1.24;text-align:center;
+  padding:2px 6px}
+.pregunta.reanim{animation:var(--kf-preg,var(--kf-op,opEntra)) var(--dur-preg,var(--dur-op)) var(--ease-op)}
+@keyframes preg{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
+
+.opciones{display:grid;grid-template-columns:1fr 1fr;gap:11px;flex:1;min-height:0}
+.op{display:flex;align-items:center;gap:13px;--lift:0px;transform:translateY(var(--lift));
+  /* cada opción lleva un velo de su propio color: en los temas claros, si no,
+     la tarjeta queda del mismo tono que el fondo */
+  background:color-mix(in srgb,var(--oc) 8%,var(--soft));
+  border:2px solid color-mix(in srgb,var(--oc) 26%,var(--line));
+  border-radius:var(--r-m);padding:0 17px;cursor:pointer;text-align:left;font-family:inherit;color:var(--ink);
+  position:relative;overflow:hidden;
+  transition:transform var(--rapido),translate var(--rapido),scale var(--rapido),
+             border-color var(--rapido),box-shadow var(--rapido),background .2s}
+/* la entrada va en su propia clase: si estuviera en la regla base, cualquier
+   otra animación posterior devolvería la opción a opacity:0 y parecería que
+   desaparece y vuelve a aparecer */
+.op.entra{animation:var(--kf-op,opEntra) var(--dur-op) var(--ease-op) backwards}
+@keyframes opEntra{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+/* PANTALLA TÁCTIL: el hover solo existe con ratón («hover:hover» y puntero
+   fino). En una pizarra táctil el navegador deja el hover «pegado» al
+   último toque; así ninguna pieza se queda levantada ni cambia de color
+   hasta que se toca otra cosa. El apretón (:active) sí se mantiene. */
+/* HOVER Y ANIMACIONES NO SE PISAN
+   El levantamiento del hover va en la propiedad «translate» y el apretón
+   del clic en «scale»; las animaciones de juego usan «transform». Son tres
+   propiedades distintas que el navegador SUMA, así que el latido arranca
+   desde donde está la tarjeta (levantada si el ratón sigue encima) y
+   termina en el mismo sitio: sin saltos al acabar. (--lift se queda a 0;
+   los fotogramas antiguos lo siguen nombrando y no molesta.) */
+@media (hover:hover) and (pointer:fine){.op:hover{translate:0 -3px;border-color:var(--oc);box-shadow:0 10px 24px rgba(20,15,60,.14)}}
+/* la que se pulsa manda: al crecer debe quedar POR ENCIMA de las demás
+   (si no, A y C siempre se metían debajo de B y D) */
+.op.late{z-index:4}
+.op:hover,.op:active{z-index:3}
+.op.elegida{z-index:2}
+.op:active{scale:.985}
+.op .k{width:clamp(34px,4vw,48px);height:clamp(34px,4vw,48px);flex:0 0 auto;border-radius:13px;
+  background:var(--oc);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;
+  font-size:clamp(16px,2vw,23px);transition:transform var(--rapido)}
+@media (hover:hover) and (pointer:fine){.op:hover .k{transform:scale(1.07) rotate(-3deg)}}
+.op .v{font-size:clamp(14px,1.75vw,21px);font-weight:700}
+.op .marcas{position:absolute;right:11px;top:9px;display:flex;gap:5px}
+.op .marcas i{width:15px;height:15px;border-radius:50%;background:var(--m);display:block;
+  border:2px solid var(--panel);box-shadow:0 2px 6px rgba(0,0,0,.25);
+  animation:marcaEntra .32s cubic-bezier(.2,1.6,.4,1)}
+@keyframes marcaEntra{from{transform:scale(0) rotate(-40deg)}to{transform:none}}
+.op.late{animation:late .3s cubic-bezier(.2,1.5,.4,1)}
+@keyframes late{
+  0%{transform:translateY(var(--lift))}
+  45%{transform:translateY(var(--lift)) scale(1.035)}
+  100%{transform:translateY(var(--lift))}}
+/* opción ya elegida por algún equipo: se queda marcada, no parpadea */
+.op.elegida{border-color:var(--oc);background:color-mix(in srgb,var(--oc) 12%,var(--panel));
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--oc) 22%,transparent)}
+.op.elegida .k{transform:scale(1.06)}
+.op.buena{border-color:var(--verde);background:color-mix(in srgb,var(--verde) 14%,var(--panel));box-shadow:0 0 0 4px rgba(34,164,93,.16)}
+.op.buena .k{background:var(--verde)}
+.op.mala{opacity:.45;filter:grayscale(.55)}
+.op[disabled]{cursor:default}
+
+.turnos{display:grid;grid-template-columns:repeat(var(--neq,4),1fr);gap:9px}
+.casilla{border:2px dashed var(--line);border-radius:var(--r-l);padding:7px 6px;text-align:center;
+  transition:transform .2s,border-color .2s,background .2s}
+.casilla .lb{font-size:11px;color:var(--muted);font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.casilla .ans{font-size:clamp(16px,2.1vw,24px);font-weight:800;color:color-mix(in srgb,var(--muted) 70%,var(--panel));line-height:1.15}
+.casilla.puesta{border-style:solid;border-color:var(--c);background:color-mix(in srgb,var(--c) 14%,var(--panel))}
+.casilla.puesta .ans{color:var(--c)}
+.casilla.activa{border-style:solid;border-color:var(--c);transform:translateY(-4px);
+  box-shadow:0 0 0 4px color-mix(in srgb,var(--c) 22%,transparent);animation:respira 1.25s ease-in-out infinite}
+@keyframes respira{0%,100%{transform:translateY(-4px)}50%{transform:translateY(-9px)}}
+
+.zonaEscrita{flex:1;display:flex;flex-direction:column;gap:11px;min-height:0}
+.solucion{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  background:var(--calido);border:2px dashed var(--calido-borde);border-radius:var(--r-m);padding:14px;position:relative;overflow:hidden}
+.solucion .pista{color:var(--calido-tenue);font-size:12.5px;font-weight:800;letter-spacing:1.2px}
+.solucion .val{font-size:clamp(25px,3.8vw,46px);font-weight:800;color:var(--calido-texto);text-align:center;
+  transition:filter .3s ease,opacity .3s ease,transform .3s ease}
+.solucion.tapada .val{filter:blur(17px);opacity:.5;user-select:none;transform:scale(.97)}
+/* al cambiar de pregunta: la respuesta se desvanece, se pone el texto nuevo
+   YA desenfocado (sin transición) y se vuelve a mostrar. Así nunca se lee
+   de refilón la solución siguiente. */
+.solucion.cambiando .val{opacity:0 !important;transition:opacity .13s linear !important}
+.sol.cambiando .val{opacity:0 !important;transition:opacity .13s linear !important}
+.premios{display:grid;grid-template-columns:repeat(var(--neq,4),1fr);gap:9px}
+.premio{border:2px solid var(--c);color:var(--c);background:var(--panel);border-radius:var(--r-l);padding:9px 4px;
+  font-weight:800;font-size:13px;cursor:pointer;font-family:inherit;line-height:1.25;
+  transition:transform var(--rapido),translate var(--rapido),background var(--rapido),color var(--rapido);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+@media (hover:hover) and (pointer:fine){.premio:hover:not(:disabled){background:var(--c);color:#fff;translate:0 -3px}}
+.premio:disabled{opacity:.34;cursor:not-allowed}
+.premio.dado{background:var(--c);color:#fff}
+.pie{display:flex;gap:10px}
+.pie .btn{flex:1}
+.pie .btn.principal{flex:2.2}
+.atajos{font-size:11.5px;color:var(--muted);text-align:center;font-weight:700;letter-spacing:.3px}
+/* la línea de atajos queda a la misma distancia de los botones que del
+   borde de la tarjeta: el hueco de arriba es el gap (11) + este margen */
+.escena .atajos{margin-top:11px}
+.atajos kbd{background:var(--soft);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;
+  padding:1px 6px;font-family:inherit;font-size:11px}
+@media (max-width:760px){.opciones{grid-template-columns:1fr}}
+
+/* ===================== ROSCO ===================== */
+
+/* zona del rosco: NO se puede llamar .principal, choca con .btn.principal */
+.zonaRosco{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);gap:12px}
+
+/* ---------- el rosco ---------- */
+.roscocaja{background:var(--panel);border-radius:var(--r-xl);padding:12px;display:flex;align-items:center;
+  justify-content:center;box-shadow:var(--sombra);min-height:0;position:relative;overflow:hidden}
+.roscocaja::before{content:"";position:absolute;width:150%;height:150%;border-radius:50%;
+  background:radial-gradient(circle,var(--eqc) 0,transparent 62%);opacity:.1;transition:opacity .3s}
+.rosco{position:relative;aspect-ratio:1;height:100%;max-width:100%}
+.letra{position:absolute;width:12.6%;aspect-ratio:1;border-radius:50%;display:flex;
+  align-items:center;justify-content:center;font-weight:800;font-size:clamp(11px,1.75vw,21px);
+  /* en los temas claros var(--soft) es casi blanco sobre blanco: se le da
+     un toque del color del equipo para que la letra pendiente se vea */
+  background:color-mix(in srgb,var(--eqc,#6E5BE8) 11%,var(--soft));
+  color:var(--muted);
+  border:3px solid color-mix(in srgb,var(--eqc,#6E5BE8) 26%,transparent);
+  transform:translate(-50%,-50%);
+  transition:background .25s,color .25s,border-color .25s,transform .25s cubic-bezier(.2,1.3,.4,1);
+  will-change:transform}
+.letra.gana{color:#fff;background:var(--w);border-color:var(--w);
+  box-shadow:0 6px 16px color-mix(in srgb,var(--w) 45%,transparent)}
+.letra.falla{background:color-mix(in srgb,#D93E52 16%,var(--panel));color:#E4677A;border-color:#B8455A;
+  /* halo del color del panel: la letra se despega de la barra y se lee */
+  text-shadow:0 0 3px var(--panel),0 0 3px var(--panel),0 0 6px var(--panel)}
+/* la letra fallada se tacha con una barra «/» que cruza todo el círculo y
+   sobresale un poco de su borde: se ve desde el fondo de la clase. Va POR
+   DETRÁS de la letra (z-index -1 dentro del círculo), así la letra sigue
+   leyéndose. (Antes era un tachado de texto de 1 px que casi no se
+   apreciaba y parecía un fallo de dibujo.) */
+.letra.falla::before{content:"";position:absolute;left:50%;top:50%;width:124%;height:10%;
+  min-height:3px;border-radius:999px;background:#D93E52;pointer-events:none;z-index:-1;
+  transform:translate(-50%,-50%) rotate(-45deg);box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.letra.pasa{background:var(--calido);color:var(--calido-tenue);border-color:var(--calido-borde)}
+.letra.ahora{border-color:var(--ink);background:var(--panel);color:var(--ink);z-index:5;
+  transform:translate(-50%,-50%) scale(1.34);box-shadow:0 8px 22px rgba(20,15,60,.32)}
+.letra.ahora::after{content:"";position:absolute;inset:-9px;border-radius:50%;
+  border:3px solid var(--eqc);opacity:.55;animation:halo 1.5s ease-out infinite}
+@keyframes halo{0%{transform:scale(.92);opacity:.6}70%{transform:scale(1.22);opacity:0}100%{opacity:0}}
+.letra.nace{animation:var(--kf-nace,nace) var(--dur-nace,.34s) var(--ease-nace,cubic-bezier(.2,1.5,.4,1))}
+@keyframes nace{0%{transform:translate(-50%,-50%) scale(.4)}100%{transform:translate(-50%,-50%) scale(1)}}
+.centro{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;width:56%}
+.centro .gr{font-size:clamp(40px,7.4vw,92px);font-weight:800;line-height:.95;color:var(--ink)}
+.centro .gr.cambia{animation:var(--kf-gr,giroL) var(--dur-gr,.3s) cubic-bezier(.2,1.2,.3,1)}
+@keyframes giroL{from{opacity:0;transform:translateY(8px) scale(.82)}to{opacity:1;transform:none}}
+/* «pie» también es la fila de botones del trivial, que va en flex: aquí
+   hay que volver a bloque para que el salto de línea se respete */
+.centro .pie{display:block;font-size:11.5px;color:var(--muted);font-weight:800;margin-top:5px;
+  line-height:1.3}
+.centro .rachaG{font-size:12.5px;font-weight:800;color:#C2610F;margin-top:3px;min-height:16px}
+
+/* ---------- panel ---------- */
+.panel{background:var(--panel);border-radius:var(--r-xl);padding:clamp(12px,1.8vw,20px);display:flex;
+  flex-direction:column;gap:10px;min-height:0;box-shadow:var(--sombra)}
+.phead{display:flex;align-items:center;justify-content:flex-end;gap:8px}
+/* «EMPIEZA POR X» va centrado justo encima de la definición y bien
+   grande: es lo primero que hay que leer en cada letra */
+.modo{font-size:clamp(15px,1.7vw,24px);font-weight:800;
+  padding:7px 20px;border-radius:999px;background:var(--soft);color:var(--ink);letter-spacing:1px;
+  text-align:center}
+.turnoEt{font-size:12.5px;font-weight:800;padding:6px 13px;border-radius:999px;color:#fff;
+  background:var(--eqc);box-shadow:0 5px 14px color-mix(in srgb,var(--eqc) 45%,transparent);
+  transition:background .25s}
+.relojes{display:flex;gap:10px}
+.rel{flex:1;background:var(--soft);border:2px solid var(--line);border-radius:var(--r-l);
+  padding:6px 4px;text-align:center;transition:border-color .2s,background .2s}
+.rel b{display:block;font-size:clamp(17px,2.3vw,30px);line-height:1.1;font-variant-numeric:tabular-nums}
+.rel span{font-size:10px;color:var(--muted);font-weight:800;letter-spacing:.4px}
+.rel.baja{border-color:#E4677A;background:color-mix(in srgb,#D93E52 12%,var(--panel))}
+.rel.baja b{color:#D93E52;animation:tic .5s infinite}
+@keyframes tic{0%,100%{transform:scale(1)}50%{transform:scale(1.13)}}
+.rel.pausa{border-color:var(--calido-borde);background:var(--calido);border-style:dashed}
+.rel.pausa b{color:#C2610F;animation:none}
+.rel.pausa b::after{content:" ⏸";font-size:.6em}
+
+/* el cartel del modo y la definición van juntos y centrados en el hueco */
+.zonaDef{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+  min-height:0}
+.definicion{display:flex;align-items:center;justify-content:center;text-align:center;
+  font-size:clamp(16px,2.15vw,28px);font-weight:600;line-height:1.35;padding:6px}
+.definicion.reanim{animation:var(--kf-def,var(--kf-op,opEntra)) var(--dur-def,var(--dur-op)) var(--ease-op)}
+/* el cartel del modo entra con la misma animación que la definición */
+.modo.reanim{animation:var(--kf-def,var(--kf-op,opEntra)) var(--dur-def,var(--dur-op)) var(--ease-op)}
+@keyframes defEntra{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
+
+.sol{background:var(--calido);border:2px dashed var(--calido-borde);border-radius:var(--r-m);padding:11px;text-align:center}
+.sol .hint{font-size:11px;font-weight:800;color:var(--calido-tenue);letter-spacing:1px}
+.sol .val{font-size:clamp(20px,3vw,40px);font-weight:800;color:var(--calido-texto);margin-top:3px;
+  transition:filter .28s,opacity .28s,transform .28s}
+.sol.tapada .val{filter:blur(16px);opacity:.5;user-select:none;transform:scale(.97)}
+/* al destapar la solución: por defecto nada (manda la transición de
+   arriba); los estilos de movimiento que quieran pueden darle un remate */
+.sol.revela{animation:var(--kf-revela,none) var(--dur-revela,.5s) cubic-bezier(.2,1,.3,1)}
+/* al cambiar de rosco (nuevo turno) la caja entera puede entrar con algo */
+.roscocaja.giraTurno{animation:var(--kf-turno,none) var(--dur-turno,.6s) cubic-bezier(.2,.95,.3,1)}
+
+.acciones{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
+.acc{border:0;border-radius:var(--r-l);padding:13px 6px;font-weight:800;font-size:14.5px;cursor:pointer;
+  color:#fff;font-family:inherit;
+  transition:transform var(--rapido),translate var(--rapido),scale var(--rapido),filter var(--rapido);
+  box-shadow:0 8px 20px rgba(0,0,0,.14);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+@media (hover:hover) and (pointer:fine){.acc:hover{translate:0 -3px;filter:brightness(1.09)}}
+.acc:active{scale:.97}
+.acc small{display:block;font-weight:500;opacity:.85;font-size:10px;margin-top:2px}
+.acc.si{background:linear-gradient(135deg,#22A45D,#2FC375)}
+.acc.no{background:linear-gradient(135deg,#D93E52,#F05B6E)}
+.acc.pp{background:linear-gradient(135deg,#E8A020,#F5B942)}
+.btn.ancho{width:100%}
+.atajos{font-size:11.5px;color:var(--muted);text-align:center;font-weight:700}
+.atajos kbd{background:var(--soft);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;
+  padding:1px 6px;font-family:inherit;font-size:11px}
+
+/* ---------- panel de tiempos ---------- */
+.caja.cfg{text-align:left}
+.caja.cfg h2{text-align:center}
+.linea{display:flex;align-items:center;gap:10px;padding:9px 2px;font-size:15px;font-weight:800}
+.linea.sub{padding-left:28px;font-weight:500;font-size:14px;color:var(--ink);opacity:.9;flex-wrap:wrap}
+.linea.sub.off{opacity:.38;pointer-events:none}
+.linea input[type=checkbox]{width:19px;height:19px;accent-color:var(--violeta);cursor:pointer}
+.linea input[type=number]{width:76px;padding:6px 8px;border:2px solid var(--line);border-radius:9px;
+  font-family:inherit;font-size:15px;font-weight:800;text-align:center;background:var(--panel);color:var(--ink)}
+.linea select{padding:6px 8px;border:2px solid var(--line);border-radius:9px;font-family:inherit;font-size:14px;background:var(--panel);color:var(--ink)}
+.nota{font-size:12.5px;color:var(--muted);margin:8px 0 14px;line-height:1.45}
+.dos{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+
+.sacude{animation:sacude .32s}
+@keyframes sacude{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+/* la letra vive centrada con translate(-50%,-50%): su temblor debe conservarlo */
+.letra.sacudeL{animation:sacudeL .34s}
+@keyframes sacudeL{
+  0%,100%{transform:translate(-50%,-50%) scale(1.34)}
+  25%{transform:translate(calc(-50% - 7px),-50%) scale(1.34)}
+  75%{transform:translate(calc(-50% + 7px),-50%) scale(1.34)}}
+@media (max-width:920px){.zonaRosco{grid-template-columns:1fr;grid-template-rows:minmax(180px,1fr) auto}}
+
+/* ---------- pie de las capas (marcador, podio) ---------- */
+.capa-pie{display:flex;justify-content:center;gap:9px;margin-top:16px;flex-wrap:wrap}
+.capa-pie .btn{padding:11px 20px;flex:0 0 auto}
+
+/* ---------- entrada de las letras del rosco ---------- */
+.letra.entra{animation:var(--kf-letra,letraEntra) var(--dur-letra) var(--ease-op) backwards}
+@keyframes letraEntra{
+  from{opacity:0;transform:translate(-50%,-50%) scale(.4)}
+  to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+
+/* ---------- reentrada de bloques del menú ---------- */
+.reentra{animation:var(--kf-op,opEntra) var(--dur-op) var(--ease-op)}
+@keyframes reentra{from{opacity:0;transform:translateY(12px) scale(.985)}to{opacity:1;transform:none}}
+
+/* =========================================================
+   ESTILOS DE ANIMACIÓN  ·  solo variables y fotogramas
+   ========================================================= */
+:root{
+  --dur-vista:260ms; --ease-vista:cubic-bezier(.2,.9,.3,1);
+  --vista-entra:translateY(14px) scale(.985);
+  --vista-sale:translateY(-12px) scale(.99);
+  --vista-blur:0px;
+  --dur-op:260ms; --ease-op:cubic-bezier(.2,1,.3,1);
+  --dur-letra:340ms;
+  --kf-caja:surge; --dur-caja:340ms;
+  --kf-fila:entra; --dur-fila:340ms;
+}
+
+/* Suave — lo justo para que se note el cambio */
+:root[data-anim="suave"]{
+  --dur-vista:220ms; --vista-entra:translateY(10px); --vista-sale:translateY(-8px);
+  --dur-op:200ms; --dur-letra:260ms; --dur-caja:260ms;
+}
+
+/* Fiesta — rebote alegre, SIN giros (mareaban) y mucho confeti */
+:root[data-anim="fiesta"]{
+  --dur-vista:320ms; --ease-vista:cubic-bezier(.2,1.05,.3,1);
+  --vista-entra:translateY(22px) scale(.965);
+  --vista-sale:translateY(-16px) scale(1.02);
+  --dur-op:380ms; --ease-op:cubic-bezier(.18,1.25,.32,1); --kf-op:opFiesta;
+  --dur-letra:420ms; --kf-letra:letraFiesta;
+  --kf-caja:cajaFiesta; --dur-caja:420ms;
+  --kf-fila:filaFiesta; --dur-fila:420ms;
+}
+@keyframes opFiesta{
+  0%{opacity:0;transform:translateY(20px) scale(.94)}
+  65%{opacity:1;transform:translateY(-3px) scale(1.025)}
+  100%{opacity:1;transform:none}}
+@keyframes letraFiesta{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.45)}
+  66%{opacity:1;transform:translate(-50%,-50%) scale(1.14)}
+  100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+@keyframes cajaFiesta{
+  0%{opacity:0;transform:scale(.86) translateY(26px)}
+  60%{opacity:1;transform:scale(1.03) translateY(-5px)}
+  100%{opacity:1;transform:none}}
+@keyframes filaFiesta{
+  0%{opacity:0;transform:translateX(-26px) scale(.97)}
+  65%{opacity:1;transform:translateX(4px) scale(1.01)}
+  100%{opacity:1;transform:none}}
+
+/* Cine — zoom lento con desenfoque */
+:root[data-anim="cine"]{
+  --dur-vista:520ms; --ease-vista:cubic-bezier(.25,.6,.2,1);
+  --vista-entra:scale(1.08); --vista-sale:scale(.92); --vista-blur:12px;
+  --dur-op:520ms; --ease-op:cubic-bezier(.25,.6,.2,1); --kf-op:opCine;
+  --dur-letra:600ms; --kf-letra:letraCine;
+  --kf-caja:cajaCine; --dur-caja:540ms;
+  --kf-fila:filaCine; --dur-fila:520ms;
+}
+@keyframes opCine{
+  from{opacity:0;transform:scale(1.06);filter:blur(8px)}
+  to{opacity:1;transform:none;filter:blur(0)}}
+@keyframes letraCine{
+  from{opacity:0;transform:translate(-50%,-50%) scale(1.5);filter:blur(6px)}
+  to{opacity:1;transform:translate(-50%,-50%) scale(1);filter:blur(0)}}
+@keyframes cajaCine{
+  from{opacity:0;transform:scale(1.12);filter:blur(14px)}
+  to{opacity:1;transform:none;filter:blur(0)}}
+@keyframes filaCine{
+  from{opacity:0;transform:scale(1.04);filter:blur(5px)}
+  to{opacity:1;transform:none;filter:blur(0)}}
+
+/* Deslizar — todo entra de lado, con suavidad de carrusel */
+:root[data-anim="deslizar"]{
+  --dur-vista:420ms; --ease-vista:cubic-bezier(.32,.72,.16,1);
+  --vista-entra:translateX(60px); --vista-sale:translateX(-60px);
+  --dur-op:420ms; --ease-op:cubic-bezier(.32,.72,.16,1); --kf-op:opDesliza;
+  --dur-letra:420ms; --kf-letra:letraDesliza;
+  --kf-caja:cajaDesliza; --dur-caja:420ms;
+  --kf-fila:filaDesliza; --dur-fila:420ms;
+}
+@keyframes opDesliza{
+  from{opacity:0;transform:translateX(44px)}
+  to{opacity:1;transform:none}}
+@keyframes letraDesliza{
+  from{opacity:0;transform:translate(calc(-50% + 26px),-50%) scale(.9)}
+  to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+@keyframes cajaDesliza{
+  from{opacity:0;transform:translateY(34px) scale(.98)}
+  to{opacity:1;transform:none}}
+@keyframes filaDesliza{
+  from{opacity:0;transform:translateX(-46px)}
+  to{opacity:1;transform:none}}
+
+/* Calma — solo fundidos */
+:root[data-anim="calma"]{
+  --dur-vista:420ms; --ease-vista:ease;
+  --vista-entra:none; --vista-sale:none;
+  --dur-op:380ms; --ease-op:ease; --kf-op:soloFundido;
+  --dur-letra:420ms; --kf-letra:soloFundido;
+  --kf-caja:soloFundido; --dur-caja:380ms;
+  --kf-fila:soloFundido; --dur-fila:380ms;
+}
+@keyframes soloFundido{from{opacity:0}to{opacity:1}}
+
+/* Cartas — todo entra dándose la vuelta, como una carta sobre la mesa.
+   Giros sobre un eje y con perspectiva, cortos: se voltean y se quedan
+   quietos, sin vaivenes que mareen. */
+:root[data-anim="cartas"]{
+  --dur-vista:440ms; --ease-vista:cubic-bezier(.2,.85,.25,1);
+  --vista-entra:perspective(1600px) rotateY(-14deg) scale(.96);
+  --vista-sale:perspective(1600px) rotateY(10deg) scale(.97);
+  --dur-op:460ms; --ease-op:cubic-bezier(.2,.9,.3,1.05); --kf-op:opCartas;
+  --dur-letra:480ms; --kf-letra:letraCartas;
+  --kf-caja:cajaCartas; --dur-caja:480ms;
+  --kf-fila:filaCartas; --dur-fila:440ms;
+}
+@keyframes opCartas{
+  0%{animation-timing-function:cubic-bezier(.45,.05,.35,1);opacity:0;transform:perspective(900px) rotateX(-85deg)}
+  60%{opacity:1;transform:perspective(900px) rotateX(9deg)}
+  100%{opacity:1;transform:none}}
+@keyframes letraCartas{
+  0%{animation-timing-function:cubic-bezier(.45,.05,.35,1);opacity:0;transform:translate(-50%,-50%) perspective(300px) rotateY(90deg)}
+  100%{opacity:1;transform:translate(-50%,-50%) perspective(300px) rotateY(0)}}
+@keyframes cajaCartas{
+  0%{animation-timing-function:cubic-bezier(.45,.05,.35,1);opacity:0;transform:perspective(1400px) rotateX(-38deg) translateY(28px)}
+  62%{opacity:1;transform:perspective(1400px) rotateX(6deg)}
+  100%{opacity:1;transform:none}}
+@keyframes filaCartas{
+  0%{animation-timing-function:cubic-bezier(.45,.05,.35,1);opacity:0;transform:perspective(700px) rotateX(-90deg)}
+  100%{opacity:1;transform:none}}
+:root[data-anim="cartas"] .op.late{animation:lateCartas .44s cubic-bezier(.2,.9,.3,1)}
+@keyframes lateCartas{
+  0%{transform:translateY(var(--lift))}
+  45%{transform:translateY(var(--lift)) perspective(900px) rotateX(12deg) scale(1.02)}
+  100%{transform:translateY(var(--lift))}}
+
+/* las cajas y las filas de resultados usan el fotograma del estilo */
+.caja{animation:var(--kf-caja,surge) var(--dur-caja) cubic-bezier(.2,1.25,.35,1)}
+.fila-r{animation:var(--kf-fila,entra) var(--dur-fila) cubic-bezier(.2,.9,.3,1) forwards}
+
+/* remates por estilo */
+:root[data-anim="fiesta"] .eq.sube .pt{animation:rebote .5s cubic-bezier(.2,1.5,.3,1)}
+:root[data-anim="fiesta"] .op.late{animation:lateFiesta .38s cubic-bezier(.2,1.4,.4,1)}
+@keyframes lateFiesta{
+  0%{transform:translateY(var(--lift))}
+  40%{transform:translateY(var(--lift)) scale(1.06)}
+  100%{transform:translateY(var(--lift))}}
+:root[data-anim="deslizar"] .op.late{animation:lateDesliza .38s cubic-bezier(.32,.72,.16,1)}
+@keyframes lateDesliza{
+  0%{transform:translateY(var(--lift))}
+  45%{transform:translate(7px,var(--lift)) scale(1.01)}
+  100%{transform:translateY(var(--lift))}}
+:root[data-anim="cine"] .op.late{animation:lateCine .5s ease-out}
+@keyframes lateCine{
+  0%{transform:translateY(var(--lift));filter:brightness(1)}
+  40%{transform:translateY(var(--lift)) scale(1.02);filter:brightness(1.35)}
+  100%{transform:translateY(var(--lift));filter:brightness(1)}}
+
+/* =========================================================
+   ANIMACIONES EXTRA  ·  activadas de fábrica
+   Todo lo de arriba se queda igual. Mientras no se active «Limitar
+   animaciones» (<html data-extra="1">) cada estilo suma movimientos propios en
+   los DOS juegos: la pregunta y la opción pulsada del trivial, el
+   punto del marcador, y en el rosco la letra grande, la definición,
+   la solución y el cambio de equipo. Apagado no se aplica nada de
+   esta sección, así que el trabajo original no se toca.
+   ========================================================= */
+
+/* ---------- Suave: lo mismo, pero que se note de dónde viene ---------- */
+:root[data-extra][data-anim="suave"]{
+  --kf-preg:pregSuaveX; --dur-preg:240ms;
+  --kf-def:defSuaveX; --dur-def:260ms;
+  --kf-gr:grSuaveX; --dur-gr:280ms;
+  --kf-nace:naceSuaveX; --dur-nace:320ms; --ease-nace:cubic-bezier(.2,.9,.3,1);
+  --kf-revela:revelaSuaveX; --dur-revela:340ms;
+  --kf-turno:turnoSuaveX; --dur-turno:380ms;
+}
+@keyframes pregSuaveX{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+@keyframes defSuaveX{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+@keyframes grSuaveX{from{opacity:0;transform:translateY(7px) scale(.94)}to{opacity:1;transform:none}}
+@keyframes naceSuaveX{
+  0%{transform:translate(-50%,-50%) scale(.72)}
+  100%{transform:translate(-50%,-50%) scale(1)}}
+@keyframes revelaSuaveX{from{transform:scale(.985)}to{transform:none}}
+@keyframes turnoSuaveX{from{opacity:.4;transform:scale(.975)}to{opacity:1;transform:none}}
+:root[data-extra][data-anim="suave"] .op.late{animation:lateSuaveX .28s cubic-bezier(.2,.9,.3,1)}
+@keyframes lateSuaveX{
+  0%{transform:translateY(var(--lift))}
+  45%{transform:translateY(var(--lift)) scale(1.02)}
+  100%{transform:translateY(var(--lift))}}
+:root[data-extra][data-anim="suave"] .eq.sube .pt{animation:rebote .34s cubic-bezier(.2,1.1,.4,1)}
+
+/* ---------- Fiesta: rebota todo, con un punto de guasa ---------- */
+:root[data-extra][data-anim="fiesta"]{
+  --kf-preg:pregFiestaX; --dur-preg:440ms;
+  --kf-def:defFiestaX; --dur-def:460ms;
+  --kf-gr:grFiestaX; --dur-gr:540ms;
+  --kf-nace:naceFiestaX; --dur-nace:620ms; --ease-nace:cubic-bezier(.2,1.1,.3,1);
+  --kf-revela:revelaFiestaX; --dur-revela:620ms;
+  --kf-turno:turnoFiestaX; --dur-turno:700ms;
+}
+@keyframes pregFiestaX{
+  0%{opacity:0;transform:translateY(24px) scale(.94)}
+  62%{opacity:1;transform:translateY(-6px) scale(1.02)}
+  100%{opacity:1;transform:none}}
+@keyframes defFiestaX{
+  0%{opacity:0;transform:translateY(26px) scale(.95)}
+  60%{opacity:1;transform:translateY(-7px) scale(1.03)}
+  100%{opacity:1;transform:none}}
+@keyframes grFiestaX{
+  0%{opacity:0;transform:scale(.5) rotate(-16deg)}
+  58%{opacity:1;transform:scale(1.18) rotate(7deg)}
+  100%{opacity:1;transform:none}}
+@keyframes naceFiestaX{
+  0%{transform:translate(-50%,-50%) scale(.35)}
+  42%{transform:translate(-50%,-50%) scale(1.45) rotate(10deg)}
+  70%{transform:translate(-50%,-50%) scale(.93) rotate(-5deg)}
+  100%{transform:translate(-50%,-50%) scale(1)}}
+@keyframes revelaFiestaX{
+  0%{transform:scale(.93)}
+  48%{transform:scale(1.06)}
+  76%{transform:scale(.99)}
+  100%{transform:none}}
+@keyframes turnoFiestaX{
+  0%{opacity:.3;transform:scale(.82) rotate(-10deg)}
+  62%{opacity:1;transform:scale(1.05) rotate(5deg)}
+  100%{opacity:1;transform:none}}
+:root[data-extra][data-anim="fiesta"] .op.late{animation:lateFiestaX .44s cubic-bezier(.2,1.5,.35,1)}
+@keyframes lateFiestaX{
+  0%{transform:translateY(var(--lift))}
+  35%{transform:translateY(var(--lift)) scale(1.09) rotate(1.4deg)}
+  68%{transform:translateY(var(--lift)) scale(.99) rotate(-.8deg)}
+  100%{transform:translateY(var(--lift))}}
+:root[data-extra][data-anim="fiesta"] .eq.sube .pt{animation:reboteX .6s cubic-bezier(.2,1.6,.3,1)}
+@keyframes reboteX{
+  0%{transform:scale(1)}
+  32%{transform:scale(1.62) rotate(-6deg)}
+  62%{transform:scale(.94) rotate(3deg)}
+  100%{transform:scale(1)}}
+
+/* ---------- Cine: desenfoques y zooms largos ---------- */
+:root[data-extra][data-anim="cine"]{
+  --kf-preg:pregCineX; --dur-preg:560ms;
+  --kf-def:defCineX; --dur-def:560ms;
+  --kf-gr:grCineX; --dur-gr:620ms;
+  --kf-nace:naceCineX; --dur-nace:700ms; --ease-nace:cubic-bezier(.25,.6,.2,1);
+  --kf-revela:revelaCineX; --dur-revela:720ms;
+  --kf-turno:turnoCineX; --dur-turno:820ms;
+}
+@keyframes pregCineX{
+  from{opacity:0;transform:scale(1.07);filter:blur(10px)}
+  to{opacity:1;transform:none;filter:blur(0)}}
+@keyframes defCineX{
+  from{opacity:0;transform:scale(1.08);filter:blur(11px)}
+  to{opacity:1;transform:none;filter:blur(0)}}
+@keyframes grCineX{
+  from{opacity:0;transform:scale(1.45);filter:blur(14px)}
+  to{opacity:1;transform:none;filter:blur(0)}}
+@keyframes naceCineX{
+  0%{transform:translate(-50%,-50%) scale(1.3);filter:brightness(2.4)}
+  100%{transform:translate(-50%,-50%) scale(1);filter:none}}
+@keyframes revelaCineX{
+  0%{transform:scale(1.03);filter:brightness(1.6)}
+  100%{transform:none;filter:none}}
+@keyframes turnoCineX{
+  0%{opacity:0;transform:scale(1.14);filter:blur(13px)}
+  100%{opacity:1;transform:none;filter:blur(0)}}
+:root[data-extra][data-anim="cine"] .op.late{animation:lateCineX .58s ease-out}
+@keyframes lateCineX{
+  0%{transform:translateY(var(--lift));filter:brightness(1)}
+  35%{transform:translateY(var(--lift)) scale(1.035);filter:brightness(1.75)}
+  100%{transform:translateY(var(--lift));filter:brightness(1)}}
+:root[data-extra][data-anim="cine"] .eq.sube .pt{animation:subeCineX .62s ease-out}
+@keyframes subeCineX{
+  0%{transform:scale(1.5);filter:blur(5px) brightness(1.8)}
+  100%{transform:scale(1);filter:none}}
+
+/* ---------- Deslizar: todo entra de lado, como un carrusel ---------- */
+:root[data-extra][data-anim="deslizar"]{
+  --kf-preg:pregDeslizaX; --dur-preg:460ms;
+  --kf-def:defDeslizaX; --dur-def:480ms;
+  --kf-gr:grDeslizaX; --dur-gr:480ms;
+  --kf-nace:naceDeslizaX; --dur-nace:520ms; --ease-nace:cubic-bezier(.32,.72,.16,1);
+  --kf-revela:revelaDeslizaX; --dur-revela:520ms;
+  --kf-turno:turnoDeslizaX; --dur-turno:640ms;
+}
+@keyframes pregDeslizaX{
+  from{opacity:0;transform:translateX(56px)}
+  to{opacity:1;transform:none}}
+@keyframes defDeslizaX{
+  0%{opacity:0;transform:translateX(72px)}
+  70%{opacity:1;transform:translateX(-8px)}
+  100%{opacity:1;transform:none}}
+@keyframes grDeslizaX{
+  from{opacity:0;transform:translateX(42px) scale(.94)}
+  to{opacity:1;transform:none}}
+@keyframes naceDeslizaX{
+  0%{transform:translate(calc(-50% - 20px),-50%) scale(.7)}
+  68%{transform:translate(calc(-50% + 6px),-50%) scale(1.1)}
+  100%{transform:translate(-50%,-50%) scale(1)}}
+@keyframes revelaDeslizaX{
+  from{transform:translateX(26px)}
+  to{transform:none}}
+@keyframes turnoDeslizaX{
+  0%{opacity:0;transform:translateX(90px) scale(.88)}
+  70%{opacity:1;transform:translateX(-10px) scale(1.01)}
+  100%{opacity:1;transform:none}}
+:root[data-extra][data-anim="deslizar"] .op.late{animation:lateDeslizaX .46s cubic-bezier(.32,.72,.16,1)}
+@keyframes lateDeslizaX{
+  0%{transform:translateY(var(--lift))}
+  40%{transform:translate(13px,var(--lift)) scale(1.02)}
+  100%{transform:translateY(var(--lift))}}
+:root[data-extra][data-anim="deslizar"] .eq.sube .pt{animation:subeDeslizaX .5s cubic-bezier(.32,.72,.16,1)}
+@keyframes subeDeslizaX{
+  0%{transform:translateX(18px) scale(1.25)}
+  100%{transform:none}}
+
+/* ---------- Calma: fundidos largos, nada brusco ---------- */
+:root[data-extra][data-anim="calma"]{
+  --kf-preg:soloFundido; --dur-preg:560ms;
+  --kf-def:calmaDefX; --dur-def:620ms;
+  --kf-gr:calmaGrX; --dur-gr:640ms;
+  --kf-nace:calmaNaceX; --dur-nace:700ms; --ease-nace:ease;
+  --kf-revela:calmaRevelaX; --dur-revela:760ms;
+  --kf-turno:calmaTurnoX; --dur-turno:820ms;
+}
+@keyframes calmaDefX{from{opacity:0;transform:scale(.99)}to{opacity:1;transform:none}}
+@keyframes calmaGrX{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+@keyframes calmaNaceX{
+  0%{transform:translate(-50%,-50%) scale(.86);filter:brightness(1.5)}
+  100%{transform:translate(-50%,-50%) scale(1);filter:none}}
+@keyframes calmaRevelaX{0%{filter:brightness(1.45)}100%{filter:none}}
+@keyframes calmaTurnoX{from{opacity:0}to{opacity:1}}
+:root[data-extra][data-anim="calma"] .op.late{animation:lateCalmaX .6s ease-out}
+@keyframes lateCalmaX{
+  0%{transform:translateY(var(--lift));filter:brightness(1)}
+  45%{transform:translateY(var(--lift));filter:brightness(1.3)}
+  100%{transform:translateY(var(--lift));filter:brightness(1)}}
+:root[data-extra][data-anim="calma"] .eq.sube .pt{animation:subeCalmaX .7s ease-out}
+@keyframes subeCalmaX{
+  0%{transform:scale(1.18);opacity:.55}
+  100%{transform:scale(1);opacity:1}}
+
+
+/* ---------- Cartas: cada cosa se voltea como un naipe ----------
+   Llevan su propia curva en cada tramo: la general (--ease-op) hace casi
+   todo el giro en los primeros 100 ms y la vuelta apenas se veía. */
+:root[data-extra][data-anim="cartas"]{
+  --kf-preg:pregCartasX; --dur-preg:680ms;
+  --kf-def:defCartasX; --dur-def:720ms;
+  --kf-gr:grCartasX; --dur-gr:760ms;
+  --kf-nace:naceCartasX; --dur-nace:720ms; --ease-nace:cubic-bezier(.2,.9,.3,1);
+  --kf-revela:revelaCartasX; --dur-revela:680ms;
+  --kf-turno:turnoCartasX; --dur-turno:900ms;
+}
+@keyframes pregCartasX{
+  0%{animation-timing-function:cubic-bezier(.45,.05,.35,1);opacity:0;transform:perspective(1000px) rotateX(-80deg)}
+  65%{animation-timing-function:cubic-bezier(.45,.05,.35,1);opacity:1;transform:perspective(1000px) rotateX(8deg)}
+  100%{opacity:1;transform:none}}
+@keyframes defCartasX{
+  0%{animation-timing-function:cubic-bezier(.45,.05,.35,1);opacity:0;transform:perspective(1000px) rotateY(70deg)}
+  65%{animation-timing-function:cubic-bezier(.45,.05,.35,1);opacity:1;transform:perspective(1000px) rotateY(-7deg)}
+  100%{opacity:1;transform:none}}
+@keyframes grCartasX{
+  0%{animation-timing-function:cubic-bezier(.45,.05,.35,1);opacity:0;transform:perspective(500px) rotateY(-180deg) scale(.8)}
+  55%{animation-timing-function:cubic-bezier(.45,.05,.35,1);opacity:1}
+  100%{opacity:1;transform:perspective(500px) rotateY(0) scale(1)}}
+@keyframes naceCartasX{
+  0%{animation-timing-function:cubic-bezier(.45,.05,.35,1);transform:translate(-50%,-50%) perspective(300px) rotateY(180deg) scale(.7)}
+  70%{animation-timing-function:cubic-bezier(.45,.05,.35,1);transform:translate(-50%,-50%) perspective(300px) rotateY(-12deg) scale(1.15)}
+  100%{transform:translate(-50%,-50%) perspective(300px) rotateY(0) scale(1)}}
+@keyframes revelaCartasX{
+  0%{animation-timing-function:cubic-bezier(.45,.05,.35,1);transform:perspective(900px) rotateX(-28deg)}
+  60%{animation-timing-function:cubic-bezier(.45,.05,.35,1);transform:perspective(900px) rotateX(5deg)}
+  100%{transform:none}}
+@keyframes turnoCartasX{
+  0%{animation-timing-function:cubic-bezier(.45,.05,.35,1);opacity:.2;transform:perspective(1600px) rotateY(-70deg) scale(.86)}
+  65%{animation-timing-function:cubic-bezier(.45,.05,.35,1);opacity:1;transform:perspective(1600px) rotateY(8deg) scale(1.01)}
+  100%{opacity:1;transform:none}}
+:root[data-extra][data-anim="cartas"] .op.late{animation:lateCartasX .5s cubic-bezier(.2,.9,.3,1)}
+@keyframes lateCartasX{
+  0%{transform:translateY(var(--lift))}
+  40%{transform:translateY(var(--lift)) perspective(900px) rotateX(20deg) scale(1.04)}
+  75%{transform:translateY(var(--lift)) perspective(900px) rotateX(-5deg)}
+  100%{transform:translateY(var(--lift))}}
+/* como una carta de verdad: mientras está de espaldas no se ve la letra
+   (si no, a media vuelta aparecía escrita al revés, en espejo) */
+:root[data-extra][data-anim="cartas"] .centro .gr,
+:root[data-extra][data-anim="cartas"] .letra{backface-visibility:hidden;-webkit-backface-visibility:hidden}
+/* el número del marcador cae como el de un reloj de paletas */
+:root[data-extra][data-anim="cartas"] .eq.sube .pt{animation:subeCartasX .5s cubic-bezier(.2,.9,.3,1)}
+@keyframes subeCartasX{
+  0%{transform:perspective(200px) rotateX(-90deg)}
+  100%{transform:perspective(200px) rotateX(0)}}
+
+/* =========================================================
+   VISTA DE PREGUNTAS (antes era una página aparte)
+   ========================================================= */
+
+.pagina{width:min(1000px,94vw);margin:0 auto;padding:22px 0 60px;display:flex;flex-direction:column;gap:16px}
+.cab{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;color:#fff}
+.cab h1{font-size:clamp(23px,3.4vw,36px);text-shadow:0 4px 20px rgba(0,0,0,.3)}
+.cab p{opacity:.8;font-size:13.5px;margin-top:2px}
+
+.nav{display:flex;gap:7px;flex-wrap:wrap}
+.pagina .tarjeta{padding:22px;gap:13px}
+.tarjeta h2{font-size:clamp(18px,2.3vw,24px);display:flex;align-items:center;gap:8px}
+.tarjeta h3{font-size:16px;margin-top:6px}
+.tarjeta p,.tarjeta li{font-size:14.5px;line-height:1.55;color:var(--ink);opacity:.92}
+.tarjeta ol,.tarjeta ul{padding-left:22px;display:flex;flex-direction:column;gap:6px}
+.tenue{color:var(--muted);font-size:13px}
+
+.pestanas{display:flex;gap:8px}
+/* selector de sección de la página de preguntas */
+.secciones{display:flex;gap:8px;flex-wrap:wrap;background:rgba(0,0,0,.18);
+  padding:6px;border-radius:999px;align-self:flex-start;max-width:100%}
+.secciones .pestana{border-color:transparent;background:transparent;color:#fff;opacity:.72}
+.secciones .pestana:hover{opacity:1;background:rgba(255,255,255,.08)}
+.secciones .pestana.act{opacity:1;background:var(--violeta);border-color:var(--violeta)}
+
+/* título con su botón a la derecha, y pestañas con el suyo */
+.cabTarjeta{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.filaPestanas{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.filaPestanas .btn,.cabTarjeta .btn{padding:9px 18px}
+/* el encargo abierto se nota: vuelve a pulsarlo y se cierra */
+.btn.activo{box-shadow:0 0 0 3px color-mix(in srgb,var(--violeta) 55%,transparent),
+  0 10px 24px rgba(110,91,232,.42)}
+/* los dos paneles heredan la separación que da la tarjeta a sus hijos:
+   sin esto, todo lo de dentro quedaba pegado */
+#panelPegar,#panelIA{display:flex;flex-direction:column;gap:13px}
+#panelPegar label{margin-bottom:-6px}   /* la etiqueta, pegada a su campo */
+#panelIA h3{font-size:18px;margin:2px 0 0}
+.pestana{border:2px solid var(--line);background:var(--panel);border-radius:999px;padding:9px 18px;
+  font-family:inherit;font-weight:800;font-size:14px;color:var(--ink);cursor:pointer;
+  transition:transform var(--rapido),background var(--rapido),color var(--rapido)}
+.pestana:hover{transform:translateY(-2px)}
+.pestana.act{background:var(--violeta);border-color:var(--violeta);color:#fff;
+  box-shadow:0 8px 20px rgba(110,91,232,.35)}
+
+.soltar{border:3px dashed var(--line);border-radius:var(--r-m);padding:16px;text-align:center;
+  color:var(--muted);font-weight:700;font-size:13.5px;transition:background .2s,border-color .2s}
+.soltar.encima{border-color:var(--violeta);background:color-mix(in srgb,var(--violeta) 12%,var(--panel));color:var(--violeta)}
+textarea{width:100%;min-height:190px;border:2px solid var(--line);border-radius:var(--r-m);
+  background:var(--panel);color:var(--ink);padding:13px;font-family:ui-monospace,"SFMono-Regular",Consolas,monospace;font-size:12.5px;
+  line-height:1.5;resize:vertical}
+textarea:focus{outline:none;border-color:var(--violeta)}
+.botones{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.botones .btn{flex:0 0 auto;padding:11px 18px}
+/* acciones principales a la izquierda, las de apoyo a la derecha */
+.botones.reparto{justify-content:space-between}
+/* fila de un solo botón centrada, con aire arriba y abajo */
+.botones.centrado{justify-content:center;margin:5px 0 3px}
+.botones .grupo{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+
+.aviso{border-radius:var(--r-m);padding:12px 14px;font-size:13.5px;line-height:1.5;font-weight:600}
+.aviso.mal{background:color-mix(in srgb,#D93E52 12%,var(--panel));border:2px solid #E4677A;color:color-mix(in srgb,#D93E52 70%,var(--ink))}
+.aviso.ojo{background:var(--calido);border:2px solid var(--calido-borde);color:var(--calido-texto)}
+.aviso.bien{background:color-mix(in srgb,var(--verde) 12%,var(--panel));border:2px solid color-mix(in srgb,var(--verde) 45%,var(--panel));color:color-mix(in srgb,var(--verde) 75%,var(--ink))}
+.aviso ul{margin-top:6px;padding-left:20px}
+/* ventana con el resultado de comprobar o de guardar */
+.cajaAviso{width:min(780px,94vw)}
+.avisoCuerpo{display:flex;flex-direction:column;gap:10px;max-height:62vh;overflow:auto;padding-right:2px}
+.avisoCuerpo .aviso{font-size:14.5px}
+
+.previa{border:2px solid var(--line);border-radius:var(--r-m);overflow:hidden}
+.previa .cabp{background:var(--soft);padding:10px 14px;font-weight:800;font-size:13.5px;
+  display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.previa .cuerpo{max-height:270px;overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:7px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--soft);font-size:11.5px;letter-spacing:.4px;color:var(--muted);position:sticky;top:0}
+td.ok{color:var(--verde);font-weight:800}
+
+pre{background:#131735;color:#D7DCF5;border-radius:var(--r-m);padding:14px;overflow:auto;
+  font-family:ui-monospace,"SFMono-Regular",Consolas,monospace;font-size:12px;line-height:1.55;
+  max-height:340px;white-space:pre-wrap;word-break:break-word}
+/* el encargo se puede editar: mismo aspecto que el bloque de código */
+#promptTexto{width:100%;height:min(210px,26vh);min-height:120px;max-height:46vh;resize:vertical;
+  background:#131735;color:#D7DCF5;border:2px solid #2A3157;border-radius:var(--r-m);padding:14px;
+  font-family:ui-monospace,"SFMono-Regular",Consolas,monospace;font-size:12px;line-height:1.55;
+  transition:border-color var(--rapido),box-shadow var(--rapido)}
+#promptTexto:focus{outline:none;border-color:var(--violeta);
+  box-shadow:0 0 0 4px color-mix(in srgb,var(--violeta) 22%,transparent)}
+/* nota · Copiar · Restaurar en una sola fila; las dos columnas de los lados
+   miden lo mismo, así «Copiar» queda centrado en horizontal, y la fila
+   lleva el mismo margen arriba y abajo, así queda centrado en vertical
+   entre la caja del prompt y las cajas de las IA */
+.filaCopiar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;
+  margin:6px 0}
+.filaCopiar .tenue{font-size:12px;justify-self:start;line-height:1.35}
+.filaCopiar #btnRestaurar{justify-self:end}
+@media (max-width:760px){
+  .filaCopiar{grid-template-columns:1fr auto}
+  .filaCopiar #btnCopiarPrompt{grid-column:1 / -1;justify-self:center;order:-1}
+}
+/* los dos grupos de IA: las que reciben el prompt y las que hay que pegar */
+/* los dos grupos, uno al lado del otro: la sección no se alarga */
+.dosIA{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:700px){.dosIA{grid-template-columns:1fr}}
+.grupoIA{border:2px solid var(--line);border-radius:var(--r-m);padding:10px 12px 12px;
+  display:flex;flex-direction:column;justify-content:space-between;gap:8px;background:var(--soft)}
+.grupoIA > .tenue{text-align:center;margin:0;font-size:12.5px;line-height:1.4}
+/* dentro del grupo el fondo ya es suave: los botones necesitan su propio
+   relieve para no confundirse con él */
+.grupoIA .btn{background:var(--panel);border:2px solid var(--line);padding:10px 20px}
+.grupoIA .btn:hover{background:var(--soft);border-color:var(--violeta)}
+.copiar{align-self:flex-start}
+.copiar.hecho{background:var(--verde);color:#fff}
+
+.listaBancos{display:grid;gap:9px}
+/* la lista no crece sin fin: se desplaza dentro de su propio marco */
+.listaBancos.scrollable{max-height:min(42vh,300px);overflow:auto;padding:3px;
+  border:2px solid var(--line);border-radius:var(--r-m);background:var(--soft)}
+.listaBancos.scrollable.alta{max-height:min(52vh,380px)}
+.listaBancos.scrollable .bancoFila{background:var(--panel)}
+/* mientras se guarda un cambio la lista se atenúa: así no hace falta
+   tocar el texto de ningún botón */
+.listaBancos.ocupada{opacity:.55;pointer-events:none;cursor:progress}
+.listaBancos.ocupada .bancoFila{filter:grayscale(.3)}
+.listaBancos .vacia{padding:18px 14px;text-align:center;color:var(--muted);font-weight:700;font-size:13.5px}
+/* ---------- ventanas propias (código, renombrar, avisos) ---------- */
+.caja.caja-izq{text-align:left}
+.caja.dlg{width:min(480px,94vw);padding:26px 26px 22px;display:flex;flex-direction:column;gap:12px}
+.caja.dlg h2{font-size:22px;display:flex;align-items:center;gap:9px}
+.caja.dlg .sub{color:var(--muted);font-size:14px;line-height:1.5;margin:0}
+.caja .campo{width:100%;padding:13px 15px;border:2px solid var(--line);border-radius:var(--r-l);
+  font-family:inherit;font-size:16px;font-weight:700;letter-spacing:.3px;
+  background:var(--soft);color:var(--ink);transition:border-color var(--rapido),box-shadow var(--rapido)}
+.caja .campo::placeholder{color:var(--muted);font-weight:600;letter-spacing:0}
+.caja .campo:focus{outline:none;border-color:var(--violeta);background:var(--panel);
+  box-shadow:0 0 0 4px color-mix(in srgb,var(--violeta) 22%,transparent)}
+.caja .campo[type=password]{letter-spacing:4px;font-size:18px}
+.caja.dlg .aviso{margin:0}
+.btn.peligro{background:linear-gradient(135deg,#D93E52,#F05B6E);color:#fff;
+  box-shadow:0 10px 24px rgba(217,62,82,.38)}
+.btn.peligro:hover{filter:brightness(1.07)}
+.caja.caja-izq .sub{margin-bottom:12px}
+.caja.caja-izq .pestanas{margin-bottom:10px}
+#pieLista{margin-top:2px}
+.bancoFila{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+  border:2px solid var(--line);border-radius:var(--r-m);padding:11px 14px}
+.bancoFila b{font-size:14.5px}
+.bancoFila .meta{font-size:12px;color:var(--muted);font-weight:700}
+.bancoFila .acc,.barraSel .acc{display:flex;flex-direction:row;flex-wrap:wrap;justify-content:flex-end;gap:7px;
+  padding:0;box-shadow:none;border-radius:0;color:inherit;font-size:inherit;cursor:default;translate:none;filter:none;scale:none}
+.mini{border:2px solid var(--line);background:var(--panel);border-radius:10px;padding:8px 13px;font-family:inherit;
+  font-weight:800;font-size:13px;cursor:pointer;color:var(--ink);transition:transform var(--rapido);
+  display:inline-flex;align-items:center;gap:6px}
+/* el icono, más grande que la palabra: a dos metros de la pizarra los
+   emojis pequeños no se distinguen */
+.mini .ic{font-size:1.45em;line-height:1}
+.mini:hover{transform:translateY(-2px);background:var(--soft)}
+.mini.rojo{color:#C0334A;border-color:#F4C2CB}
+.eti{font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;background:var(--soft);color:var(--ink)}
+code{background:var(--soft);border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:12.5px}
+
+.pagina .campo{width:100%;padding:11px 12px;border:2px solid var(--line);border-radius:var(--r-l);
+  font-family:inherit;font-size:14px;font-weight:700;background:var(--panel);color:var(--ink)}
+/* los paneles desplegables reparten su propio espacio: sin esto, los
+   botones quedaban pegados al recuadro del encargo */
+#zonaPrompt,#zonaComo{margin-top:2px;display:flex;flex-direction:column;gap:11px}
+/* mientras se abre o se cierra, el panel anima su altura: así la página
+   no pega el tirón de pasar de golpe a display:none */
+.plegable{overflow:hidden;
+  transition:height .28s cubic-bezier(.3,0,.2,1),opacity .22s ease}
+
+/* =========================================================
+   FOCOS DE LA PANTALLA DE TÍTULO
+   Laten con los graves (--n lo pone el JS) y se salen por los
+   lados, como una rampa de luces de plató.
+   ========================================================= */
+.focos{position:fixed;left:0;right:0;bottom:0;height:min(68vh,620px);z-index:-1;
+  pointer-events:none;--n:0;
+  /* la capa entera se enciende y se apaga poco a poco: al pasar del menú
+     al juego, o al abrirse el podio, no hay cortes */
+  opacity:0;transition:opacity .9s ease;
+  /* el degradado difumina los haces por arriba: sin él, la caja los cortaba
+     en línea recta y se veía el borde */
+  -webkit-mask-image:linear-gradient(to top,#000 0 46%,rgba(0,0,0,.55) 74%,transparent 100%);
+          mask-image:linear-gradient(to top,#000 0 46%,rgba(0,0,0,.55) 74%,transparent 100%)}
+.focos i{position:absolute;bottom:-8%;left:var(--x);width:16%;height:104%;
+  transform-origin:50% 100%;
+  transform:translateX(-50%) rotate(var(--r)) scaleY(calc(.22 + var(--n) * .78));
+  background:linear-gradient(to top,var(--c) 0%,color-mix(in srgb,var(--c) 45%,transparent) 42%,transparent 82%);
+  filter:blur(22px);
+  opacity:calc(.10 + var(--n) * .62);
+  transition:transform .07s linear,opacity .07s linear}
+.focos::after{content:"";position:absolute;left:0;right:0;bottom:0;height:min(22%,110px);
+  background:linear-gradient(to top,color-mix(in srgb,var(--oro) 22%,transparent),transparent);
+  opacity:calc(.15 + var(--n) * .5);transition:opacity .09s linear}
+.focos.encendidos{opacity:1}
+/* en el podio los focos se meten DENTRO de la capa: así quedan por encima
+   del desenfoque del fondo y por debajo de la ventana del marcador */
+.capa.podio > .focos{z-index:0}
+.capa.podio > .focos.encendidos{opacity:.82}   /* sobre el desenfoque, algo más suaves */
+.capa.podio > .caja{position:relative;z-index:1}
+.focos.vivo i{animation:focoBase var(--compas,.54s) ease-in-out infinite}
+.focos.vivo i:nth-child(2n){animation-delay:calc(var(--compas,.54s) / 2)}
+.focos.vivo i:nth-child(3n){animation-delay:calc(var(--compas,.54s) / 4)}
+@keyframes focoBase{0%,100%{filter:blur(22px) brightness(1)}45%{filter:blur(26px) brightness(1.45)}}
+
+/* el título late al compás del tema (111,155 ppm) */
+.conMusica #tituloGrande{animation:latidoTitulo var(--compas,.54s) cubic-bezier(.3,0,.3,1) infinite}
+@keyframes latidoTitulo{
+  0%{transform:scale(1)}
+  12%{transform:scale(1.045)}
+  46%{transform:scale(.995)}
+  100%{transform:scale(1)}}
+
+.creditos{color:#fff;opacity:.6;font-size:12.5px;text-align:center;margin-top:2px}
+.creditos b{font-weight:800;opacity:.9}
+
+/* =========================================================
+   BARRA SUPERIOR · que el título nunca quede debajo de los botones
+   ========================================================= */
+.topbar{flex-wrap:wrap;row-gap:6px}
+.marca{flex:1 1 220px;min-width:0}
+.herramientas{flex-wrap:wrap;justify-content:flex-end}
+@media (max-width:820px){
+  .marca{flex:1 1 100%;order:2}
+  .herramientas{flex:1 1 100%;order:1;justify-content:flex-start}
+  .marca b{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.15}
+  .marca span{display:none}
+  .atajos{display:none}          /* en móvil no hay teclado que valga */
+  .escena{height:auto;min-height:calc(100vh - 18px)}
+}
+
+/* =========================================================
+   ROSCO SIEMPRE CIRCULAR
+   El círculo se calcula con el lado menor de su caja, así que
+   nunca se deforma, ni en 16:9 ni en vertical.
+   ========================================================= */
+.roscocaja{container-type:size}
+.rosco{aspect-ratio:1;width:min(100cqw,100cqh);height:auto;max-width:100%;max-height:100%}
+@supports not (container-type:size){
+  .rosco{width:auto;height:100%;max-width:none}
+}
+
+/* =========================================================
+   MODO ANCHO · aprovecha el 16:9 en la partida
+   ========================================================= */
+/* Al cambiar de proporción, la escena entra con un zoom corto.
+   SOLO se anima transform: tocar opacity o filter obliga al navegador a
+   rehacer la capa entera y en algunos equipos se veían desaparecer las
+   tarjetas mientras duraba el efecto. */
+.escena.zoom{animation:zoomAncho .42s cubic-bezier(.2,.9,.25,1);
+  transform-origin:50% 50%;will-change:transform}
+@keyframes zoomAncho{
+  0%{transform:scale(var(--zdesde,.94))}
+  100%{transform:none}}
+
+html.ancho .vista#vistaTrivial .escena,
+html.ancho .vista#vistaRosco .escena{
+  width:min(2200px,98vw);
+  height:min(calc(100vh - 20px),1400px);
+  padding:10px 0}
+html.ancho .opciones{gap:14px}
+html.ancho .op{padding:0 22px}
+html.ancho .zonaRosco{grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:16px}
+html.ancho .pregunta{font-size:clamp(22px,3vw,44px)}
+html.ancho .op .v{font-size:clamp(15px,1.9vw,26px)}
+html.ancho .definicion{font-size:clamp(17px,2.4vw,34px)}
+
+/* =========================================================
+   LA SOLUCIÓN DEL ROSCO ES EL BOTÓN DE REVELARLA
+   ========================================================= */
+.sol{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  width:100%;cursor:pointer;font-family:inherit;
+  transition:transform var(--rapido),translate var(--rapido),box-shadow var(--rapido)}
+/* como en las opciones: el hover en «translate», la animación en «transform» */
+@media (hover:hover) and (pointer:fine){.sol:hover{translate:0 -2px;box-shadow:0 10px 24px rgba(20,15,60,.18)}}
+.sol .hint{font-size:11.5px;font-weight:800;color:var(--calido-tenue);letter-spacing:.6px;text-align:center}
+.sol.tapada .val{min-height:1.1em}
+.sol:not(.tapada){border-style:solid}
+
+/* =========================================================
+   RENDIMIENTO · dos modos opcionales (⚡ en el menú)
+   Con los dos apagados no se aplica nada de esta sección.
+   ========================================================= */
+
+/* ---------- Media resolución ----------
+   El fondo y los focos se pintan en lienzos a la mitad de resolución
+   (js/rendimiento.js); sus versiones de siempre se ocultan. */
+.fondoLienzo{position:fixed;left:0;top:0;width:100%;height:100%;z-index:-2;
+  pointer-events:none;display:none}
+html.mediaRes .fondoLienzo{display:block}
+html.mediaRes .fondo{display:none}
+.focosLienzo{position:absolute;left:0;top:0;width:100%;height:100%;display:none}
+html.mediaRes .focosLienzo{display:block}
+html.mediaRes .focos i{display:none}
+html.mediaRes .focos::after{content:none}
+
+/* ---------- Efectos optimizados ----------
+   Mismo aspecto a resolución completa, con técnicas más baratas. */
+
+/* 1) El cuadrado que gira: de 240 a 142 vmax, lo justo para cubrir la
+      diagonal de cualquier pantalla. Los degradados se recolocan
+      (posición nueva = 50 % + (antigua − 50 %) × 240/142) y el lineal
+      arranca y acaba en los tonos que antes se veían en esa zona, así
+      que la imagen es la misma con un tercio de los píxeles. */
+html.ligero .fondo{width:142vmax;height:142vmax;margin:-71vmax 0 0 -71vmax;
+  background:
+    radial-gradient(70vmax 52vmax at 22.96% 26.34%,var(--bgA) 0,transparent 62%),
+    radial-gradient(64vmax 48vmax at 73.66% 70.28%,var(--bgB) 0,transparent 58%),
+    linear-gradient(160deg,color-mix(in srgb,var(--bgC) 79.6%,var(--bgD)) 0%,
+                           color-mix(in srgb,var(--bgC) 20.4%,var(--bgD)) 100%)}
+/* la capa que gira al revés: su opacidad de 0,6 va dentro de los colores
+   (así no necesita una superficie aparte para fundirse) */
+html.ligero .fondo::after{opacity:1;background:
+  radial-gradient(46vmax 40vmax at 63.52% 29.72%,color-mix(in srgb,var(--orb1) 60%,transparent) 0,transparent 62%),
+  radial-gradient(42vmax 36vmax at 33.1% 66.9%,color-mix(in srgb,var(--orb2) 60%,transparent) 0,transparent 60%)}
+
+/* 2) Las manchas de color: el blur(60px) —que se recalculaba en cada
+      fotograma porque se mueven— pasa a estar «pintado» en un degradado
+      con el mismo perfil. La caja crece 180 px por lado para que quepa
+      el halo, y la opacidad también va dentro del color. */
+html.ligero .fondo i{filter:none;opacity:1;margin:-180px;animation:none;
+  /* la deriva la pone fondo.js en --e, al mismo ritmo que el giro */
+  transform:translate3d(calc(4vmax * var(--e,0)),calc(3vmax * var(--e,0)),0) scale(calc(1 + .14 * var(--e,0)))}
+html.ligero .fondo i:nth-child(1){left:22.96%;top:21.27%;
+  width:calc(34vmax + 360px);height:calc(34vmax + 360px);
+  background:radial-gradient(circle closest-side,
+    color-mix(in srgb,var(--orb1) 34%,transparent) 0,
+    color-mix(in srgb,var(--orb1) 33.2%,transparent) calc(17vmax - 120px),
+    color-mix(in srgb,var(--orb1) 28.6%,transparent) calc(17vmax - 60px),
+    color-mix(in srgb,var(--orb1) 17%,transparent) 17vmax,
+    color-mix(in srgb,var(--orb1) 5.4%,transparent) calc(17vmax + 60px),
+    color-mix(in srgb,var(--orb1) .8%,transparent) calc(17vmax + 120px),
+    transparent calc(17vmax + 180px))}
+html.ligero .fondo i:nth-child(2){right:21.27%;bottom:21.27%;
+  width:calc(30vmax + 360px);height:calc(30vmax + 360px);
+  background:radial-gradient(circle closest-side,
+    color-mix(in srgb,var(--orb2) 34%,transparent) 0,
+    color-mix(in srgb,var(--orb2) 33.2%,transparent) calc(15vmax - 120px),
+    color-mix(in srgb,var(--orb2) 28.6%,transparent) calc(15vmax - 60px),
+    color-mix(in srgb,var(--orb2) 17%,transparent) 15vmax,
+    color-mix(in srgb,var(--orb2) 5.4%,transparent) calc(15vmax + 60px),
+    color-mix(in srgb,var(--orb2) .8%,transparent) calc(15vmax + 120px),
+    transparent calc(15vmax + 180px))}
+html.ligero .fondo i:nth-child(3){left:58.45%;top:33.1%;
+  width:calc(20vmax + 360px);height:calc(20vmax + 360px);
+  background:radial-gradient(circle closest-side,
+    color-mix(in srgb,var(--orb3) 16%,transparent) 0,
+    color-mix(in srgb,var(--orb3) 15.6%,transparent) calc(10vmax - 120px),
+    color-mix(in srgb,var(--orb3) 13.4%,transparent) calc(10vmax - 60px),
+    color-mix(in srgb,var(--orb3) 8%,transparent) 10vmax,
+    color-mix(in srgb,var(--orb3) 2.6%,transparent) calc(10vmax + 60px),
+    color-mix(in srgb,var(--orb3) .4%,transparent) calc(10vmax + 120px),
+    transparent calc(10vmax + 180px))}
+
+/* 2b) El fondo entero (giro + manchas) se renueva 20 veces por segundo en
+       vez de 60: a 2,6°/s el salto es de unos pocos píxeles en un degradado
+       difuso. Así la pantalla completa solo se redibuja 20 veces por segundo
+       y el resto de fotogramas únicamente lo que se mueve (js/fondo.js). */
+
+/* 3) Los focos: sin blur(22px). El haz se ensancha 2σ por lado y los
+      bordes se difuminan con una máscara fija (se rasteriza una vez);
+      cada haz va en su propia capa, así que moverlo y escalarlo en cada
+      fotograma ya no obliga a repintar. El latido del modo «vivo» anima
+      solo el brillo, que la tarjeta gráfica aplica sin coste. */
+html.ligero .focos i{filter:none;transition:none;will-change:transform,opacity;
+  width:calc(16% + 88px);
+  -webkit-mask-image:linear-gradient(to right,transparent 0,rgba(0,0,0,.16) 22px,rgba(0,0,0,.5) 44px,
+    rgba(0,0,0,.84) 66px,#000 88px,#000 calc(100% - 88px),rgba(0,0,0,.84) calc(100% - 66px),
+    rgba(0,0,0,.5) calc(100% - 44px),rgba(0,0,0,.16) calc(100% - 22px),transparent 100%);
+          mask-image:linear-gradient(to right,transparent 0,rgba(0,0,0,.16) 22px,rgba(0,0,0,.5) 44px,
+    rgba(0,0,0,.84) 66px,#000 88px,#000 calc(100% - 88px),rgba(0,0,0,.84) calc(100% - 66px),
+    rgba(0,0,0,.5) calc(100% - 44px),rgba(0,0,0,.16) calc(100% - 22px),transparent 100%)}
+html.ligero .focos.vivo i{animation-name:focoBaseLigero}
+@keyframes focoBaseLigero{0%,100%{filter:brightness(1)}45%{filter:brightness(1.45)}}
+
+/* 4) Sin cristal esmerilado: el desenfoque de lo que hay DETRÁS de los
+      botones y de las ventanas se recalculaba en cada fotograma porque
+      el fondo gira. La ventana ya es opaca al 82 %, casi no se nota. */
+html.ligero .chip,html.ligero .capa{-webkit-backdrop-filter:none;backdrop-filter:none}
+
+/* ---------- contador de FPS ---------- */
+.medidorFps{position:fixed;left:10px;top:10px;z-index:95;pointer-events:none;
+  font:800 12px/1.2 ui-monospace,Consolas,monospace;color:#fff;
+  background:rgba(10,8,30,.72);border:1px solid rgba(255,255,255,.22);
+  padding:5px 9px;border-radius:8px;letter-spacing:.2px}
+.medidorFps.bajo{color:#FFB4BE;border-color:rgba(255,93,115,.6)}
+
+/* +1 junto al nombre en la clasificación del marcador de las escritas */
+.fila-r .mas{font-size:.72em;font-weight:800;background:rgba(255,255,255,.26);
+  padding:1px 8px;border-radius:999px;margin-left:6px;vertical-align:middle}
+
+/* =========================================================
+   MULTIUSUARIO · cuenta, preguntas aleatorias y administración
+   ========================================================= */
+
+/* lo que solo existe con sesión o siendo administrador */
+html:not(.conCuenta) .js-importar{display:none!important}
+html:not(.esAdmin) .soloAdmin{display:none!important}
+
+/* ---------- esquina de la cuenta (pantalla de título) ---------- */
+.cuentaBar{position:absolute;top:14px;right:16px;z-index:6;display:flex;gap:8px;align-items:center}
+.cuentaBar .chip{padding:8px 15px;font-size:13px}
+.cuentaBar .chip.on{box-shadow:0 6px 18px rgba(245,197,24,.35)}
+.cbMenu{position:relative}
+.cbAdmin{display:inline-block;margin:0 6px;background:var(--oro);color:#1B1F3B;border-radius:6px;
+  padding:1px 6px;font-size:10px;font-weight:800;letter-spacing:.5px;vertical-align:1px}
+.cbLista{position:absolute;right:0;top:calc(100% + 7px);min-width:240px;background:var(--panel);
+  border-radius:var(--r-l);box-shadow:var(--sombra);padding:6px;display:flex;flex-direction:column;gap:2px;
+  animation:aparece .15s ease-out}
+.cbLista.oculto{display:none}
+.cbOp{border:0;background:transparent;text-align:left;padding:10px 12px;border-radius:10px;
+  font-family:inherit;font-weight:700;font-size:14px;color:var(--ink);cursor:pointer}
+.cbOp:hover,.cbOp:focus-visible{background:var(--soft);outline:none}
+
+/* ---------- ventana de entrar / registrarse ---------- */
+.cuentaCaja{margin:0}
+.cuentaCaja label{display:block;text-align:left;font-weight:800;font-size:13px;margin:0 0 -6px}
+.cuentaCaja .campo.cuCampo{letter-spacing:0;font-size:16px}
+.cuentaCaja .campo.cuCampo[type=password]{letter-spacing:4px;font-size:18px}
+.cuClaveFila{display:flex;gap:8px;align-items:stretch}
+.cuClaveFila .campo{flex:1;min-width:0}
+.cuClaveFila .mini{font-size:17px;padding:0 13px}
+.cuentaCaja .cuPista{font-size:12.5px;line-height:1.45;margin:0}
+.cuentaCaja label.cuMantener{display:flex;gap:9px;align-items:center;font-weight:700;font-size:13.5px;
+  margin:0;cursor:pointer;color:var(--ink)}
+.cuMantener input{width:18px;height:18px;accent-color:var(--violeta)}
+.cuCambio{text-align:center;font-size:13.5px;margin:2px 0 0;color:var(--muted);font-weight:600}
+.cuCambio a{color:var(--violeta);font-weight:800}
+form.ocupada{cursor:progress}
+form.ocupada .campo{opacity:.7}
+.tiembla{animation:tiembla .38s cubic-bezier(.36,.07,.19,.97)}
+@keyframes tiembla{10%,90%{translate:-2px 0}20%,80%{translate:3px 0}30%,50%,70%{translate:-5px 0}40%,60%{translate:5px 0}}
+
+/* ---------- preguntas aleatorias ---------- */
+.caja.alea{width:min(520px,94vw);display:flex;flex-direction:column;gap:12px}
+.caja.alea .sub{margin:0;line-height:1.5}
+.aleFila{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
+  padding:12px 14px;background:var(--soft);border:1px solid var(--line);border-radius:var(--r-l)}
+.aleEt b{display:block;font-size:17px}
+.aleEt span{font-size:12.5px;color:var(--muted);font-weight:700}
+.contador{display:flex;align-items:center;gap:8px}
+.contador button{width:46px;height:46px;border-radius:50%;border:0;cursor:pointer;
+  font-family:inherit;font-size:25px;font-weight:800;line-height:1;color:#fff;
+  background:linear-gradient(135deg,var(--violeta),var(--violeta2));
+  box-shadow:0 6px 14px rgba(0,0,0,.18);user-select:none;-webkit-user-select:none;touch-action:manipulation;
+  transition:transform var(--rapido),filter var(--rapido)}
+.contador button:active{transform:scale(.9)}
+@media (hover:hover) and (pointer:fine){.contador button:hover{filter:brightness(1.1);translate:0 -2px}}
+.contador input{width:74px;text-align:center;font-family:inherit;font-size:25px;font-weight:800;
+  color:var(--ink);background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:5px 4px}
+.contador input:focus{outline:none;border-color:var(--violeta)}
+.caja.alea .aviso{margin:0}
+.aleTotal{margin:0;text-align:center;font-weight:700}
+
+/* ---------- administración de usuarios ---------- */
+.cabTarjeta .grupo{display:flex;gap:8px;flex-wrap:wrap}
+.usFila{cursor:pointer}
+@media (hover:hover) and (pointer:fine){.usFila:hover{border-color:var(--violeta)}}
+.usFila.esAdminFila{cursor:default}
+.barraSel{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:10px 0}
+.barraSel .acc{margin-left:auto}
+.selTodos{display:flex;align-items:center;gap:7px;font-weight:800;font-size:13.5px;cursor:pointer}
+.selCaja{display:flex;gap:11px;align-items:center;cursor:pointer;flex:1;min-width:0}
+.selCaja input,.selTodos input{width:19px;height:19px;accent-color:var(--violeta);flex:0 0 auto}
+.selFila.marcada{border-color:var(--violeta);background:color-mix(in srgb,var(--violeta) 8%,var(--panel))}
+.mini:disabled{opacity:.42;cursor:not-allowed;transform:none}
+
+/* =========================================================
+   IMPORTAR EN CSV Y EDITOR VISUAL DE BANCOS
+   ========================================================= */
+#dlgSub{white-space:pre-line}
+.previa + .previa{margin-top:10px}
+.previa .cabp{display:flex;align-items:center;gap:10px}
+.previa .cabp .mini{margin-left:auto}
+.filaPestanas .grupo{display:flex;gap:8px;flex-wrap:wrap}
+
+.crearCero{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
+  padding:14px 16px;border-radius:var(--r-l);border:2px solid var(--line);margin:8px 0 2px;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--violeta) 13%,var(--panel)),color-mix(in srgb,var(--turquesa) 12%,var(--panel)))}
+.crearTexto{display:flex;flex-direction:column;gap:2px}
+.crearTexto b{font-size:16px}
+.crearCero .grupo{display:flex;gap:8px;flex-wrap:wrap}
+.separaO{display:flex;align-items:center;gap:10px;color:var(--muted);font-weight:800;font-size:12.5px;
+  text-transform:uppercase;letter-spacing:.5px;margin:16px 0 6px}
+.separaO::before,.separaO::after{content:"";flex:1;height:2px;background:var(--line);border-radius:2px}
+/* botón de ayuda «?» en la esquina de una tarjeta */
+.ayuda{width:34px;height:34px;flex:0 0 auto;border-radius:999px;border:2px solid var(--line);
+  background:var(--panel);color:var(--ink);font-family:inherit;font-weight:800;font-size:18px;
+  line-height:1;cursor:pointer;transition:transform var(--rapido),background var(--rapido)}
+.ayuda:hover{transform:translateY(-2px);background:var(--soft)}
+.formatoCsv{margin:4px 0;border:2px solid var(--line);border-radius:var(--r-m);padding:8px 14px}
+.formatoCsv.scrollable{max-height:58vh;overflow:auto}
+.formatoCsv summary{cursor:pointer;font-weight:800;font-size:14px;padding:2px 0}
+.formatoCsv p{font-size:13.5px;margin:8px 0}
+.formatoCsv pre{background:var(--soft);color:var(--ink);border:1px solid var(--line);
+  padding:10px 12px;border-radius:10px;overflow:auto;
+  font-size:12.5px;line-height:1.5;margin:8px 0}
+
+/* ---------- editor: página y cabecera ---------- */
+#vistaEditor{overflow-x:hidden;scroll-padding-top:110px}
+.edPagina{max-width:1120px;margin:0 auto;padding:14px 18px 70px}
+.edCab{position:sticky;top:8px;z-index:6;display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+  padding:10px 12px;border-radius:var(--r-l);box-shadow:var(--sombra);margin-bottom:12px;
+  background:color-mix(in srgb,var(--panel) 94%,transparent);backdrop-filter:blur(10px)}
+.edCab .btn{padding:9px 14px;font-size:14px}
+.edTipo{border-radius:999px;padding:5px 11px;font-weight:800;font-size:12px;letter-spacing:.4px;color:#fff;flex:0 0 auto}
+.edTipo.t-trivial{background:linear-gradient(135deg,#6E5BE8,#8B7CF6)}
+.edTipo.t-rosco{background:linear-gradient(135deg,#2BC4B4,#189B90)}
+.edTitulo{flex:1;min-width:200px;font:inherit;font-size:20px;font-weight:800;color:var(--ink);background:transparent;
+  border:2px solid transparent;border-radius:10px;padding:6px 10px}
+.edTitulo:hover{border-color:var(--line)}
+.edTitulo:focus{outline:none;border-color:var(--violeta);background:var(--panel)}
+.edTitulo::placeholder{color:var(--muted)}
+.edEstado{font-size:12.5px;font-weight:800;color:var(--muted);white-space:nowrap}
+.edEstado.sucio{color:#D98A00}
+.edAcc{display:flex;gap:7px;flex-wrap:wrap}
+#edGuardar.apagado{filter:saturate(.35);opacity:.8}
+
+/* ---------- resumen (recuentos, reparto, problemas) ---------- */
+.edResumen{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 14px;margin-bottom:14px;
+  background:var(--panel);border-radius:var(--r-l);box-shadow:var(--sombra)}
+.edDato{background:var(--soft);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:13px;font-weight:700;color:var(--ink)}
+.edDato b{font-size:15px}
+.edReparto{display:flex;gap:6px;align-items:flex-end;height:34px;padding:0 4px}
+.edBarra{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;width:30px}
+.edBarra i{display:block;width:16px;height:var(--h);min-height:2px;max-height:20px;border-radius:4px 4px 0 0;background:var(--c);
+  transition:height .25s}
+.edBarra small{font-size:10.5px;font-weight:800;color:var(--muted);white-space:nowrap}
+.edHueco{flex:1}
+.edProblemas{border:0;border-radius:999px;padding:8px 14px;font:inherit;font-weight:800;font-size:13.5px;cursor:pointer}
+.edProblemas.mal{background:color-mix(in srgb,#E8A020 22%,var(--panel));color:#A86A00}
+.edProblemas.bien{background:color-mix(in srgb,var(--verde) 18%,var(--panel));color:color-mix(in srgb,var(--verde) 70%,var(--ink));cursor:default}
+
+/* ---------- secciones y tarjetas ---------- */
+.edSeccion{background:var(--panel);border-radius:var(--r-xl);padding:16px 18px;margin-bottom:14px;box-shadow:var(--sombra)}
+.edSecCab{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.edSecCab h2{font-size:19px}
+.edLista{display:grid;gap:10px}
+.edCarta{border:2px solid var(--line);border-radius:var(--r-l);padding:10px 12px 12px;background:var(--panel);
+  transition:border-color var(--rapido),box-shadow var(--rapido)}
+.edCarta:focus-within{border-color:var(--violeta);box-shadow:0 0 0 4px color-mix(in srgb,var(--violeta) 16%,transparent)}
+.edCarta.mal{border-left:6px solid #E8A020}
+.edCarta.esEscrita{background:color-mix(in srgb,var(--turquesa) 5%,var(--panel))}
+.edCartaCab{display:flex;align-items:center;gap:8px;margin-bottom:4px;min-height:30px}
+.edAsa{cursor:grab;color:var(--muted);font-size:18px;line-height:1;user-select:none;padding:2px 2px 4px}
+.edAsa:active{cursor:grabbing}
+.edNum{font-weight:800;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;white-space:nowrap}
+.edAlerta{flex:1;min-width:0;font-size:12px;color:#B87400;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.edBtns{display:flex;gap:4px;flex:0 0 auto;margin-left:auto}
+.edB{width:30px;height:30px;border:1px solid var(--line);background:var(--soft);border-radius:8px;cursor:pointer;
+  color:var(--ink);font-size:14px;font-family:inherit;display:inline-flex;align-items:center;justify-content:center;
+  transition:background var(--rapido),border-color var(--rapido)}
+.edB:hover:not(:disabled){border-color:var(--violeta);background:color-mix(in srgb,var(--violeta) 12%,var(--panel))}
+.edB.rojo:hover:not(:disabled){border-color:#D93E52;background:color-mix(in srgb,#D93E52 12%,var(--panel))}
+.edB:disabled{opacity:.3;cursor:default}
+.edQ{display:block;width:100%;min-height:0;border-radius:0;resize:none;overflow:hidden;border:0;border-bottom:2px solid var(--line);background:transparent;
+  font:inherit;font-size:17px;font-weight:700;line-height:1.35;color:var(--ink);padding:6px 2px 7px}
+.edQ:focus{outline:none;border-color:transparent;border-bottom-color:var(--violeta)}
+.edQ::placeholder,.edOpTxt::placeholder,.edResp::placeholder,.edDef::placeholder,.edSol::placeholder{color:var(--muted);font-weight:600}
+.edOps{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.edOp{display:flex;align-items:center;gap:8px;border:2px solid var(--line);border-radius:12px;padding:3px 10px 3px 3px;
+  background:var(--soft);transition:border-color var(--rapido),background var(--rapido)}
+.edOp:focus-within{border-color:color-mix(in srgb,var(--violeta) 60%,var(--line))}
+.edOp.ok{border-color:var(--verde);background:color-mix(in srgb,var(--verde) 12%,var(--panel))}
+.edLetra{width:34px;height:34px;border-radius:9px;border:0;background:var(--c);color:#fff;font:inherit;font-weight:800;
+  font-size:15px;cursor:pointer;flex:0 0 auto;opacity:.85;transition:transform var(--rapido),box-shadow var(--rapido),opacity var(--rapido)}
+.edLetra:hover{opacity:1;transform:scale(1.07)}
+.edOp.ok .edLetra{background:var(--verde);opacity:1;box-shadow:0 0 0 3px color-mix(in srgb,var(--verde) 30%,transparent)}
+.edOpTxt{flex:1;min-width:0;border:0;background:transparent;font:inherit;font-size:15px;font-weight:600;color:var(--ink);padding:7px 2px}
+.edOpTxt:focus{outline:none}
+.edTick{color:var(--verde);font-weight:900;opacity:0;transition:opacity var(--rapido)}
+.edOp.ok .edTick{opacity:1}
+.edRespFila{display:flex;align-items:center;gap:10px;margin-top:10px}
+.edRespFila span{font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.edResp{flex:1;min-width:0;border:2px solid var(--line);border-radius:10px;padding:8px 11px;font:inherit;font-size:15px;
+  font-weight:800;background:var(--soft);color:var(--ink)}
+.edResp:focus{outline:none;border-color:var(--verde);background:var(--panel)}
+.edAnadir{width:100%;margin-top:10px;border:2px dashed var(--line);background:transparent;border-radius:var(--r-l);padding:12px;
+  font:inherit;font-weight:800;font-size:14.5px;color:var(--muted);cursor:pointer;transition:border-color var(--rapido),color var(--rapido),background var(--rapido)}
+.edAnadir:hover{border-color:var(--violeta);color:var(--violeta);background:color-mix(in srgb,var(--violeta) 6%,var(--panel))}
+.edCarta.arrastrando{opacity:.35}
+.edCarta.sobre.antes{box-shadow:0 -4px 0 var(--violeta)}
+.edCarta.sobre.despues{box-shadow:0 4px 0 var(--violeta)}
+.destella{animation:edDestella .9s ease-out}
+@keyframes edDestella{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--violeta) 55%,transparent)}
+  100%{box-shadow:0 0 0 14px transparent}}
+
+/* ---------- rosco ---------- */
+.edAjRosco{display:flex;gap:12px 16px;flex-wrap:wrap;align-items:center}
+.edCampoFila{display:flex;align-items:center;gap:10px;flex:1;min-width:280px}
+.edCampoFila span{font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;white-space:nowrap}
+.edCampoFila.corto{flex:0 0 auto;min-width:0}
+.edLetrasTxt,.edSegs{border:2px solid var(--line);border-radius:10px;padding:8px 10px;font:inherit;font-weight:800;
+  background:var(--soft);color:var(--ink)}
+.edLetrasTxt{flex:1;min-width:0;letter-spacing:1px}
+.edSegs{width:96px}
+.edLetrasTxt:focus,.edSegs:focus{outline:none;border-color:var(--violeta);background:var(--panel)}
+.edPresets{display:flex;gap:6px;flex-wrap:wrap}
+.edEquipos{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+.edEquipo{border:2px solid var(--line);background:var(--panel);border-radius:999px;padding:8px 15px;font:inherit;font-weight:800;
+  font-size:14px;color:var(--ink);cursor:pointer;display:flex;gap:8px;align-items:center;box-shadow:var(--sombra);
+  transition:transform var(--rapido),background var(--rapido)}
+.edEquipo:hover{transform:translateY(-2px)}
+.edEquipo.act{background:linear-gradient(135deg,#2BC4B4,#189B90);border-color:transparent;color:#fff}
+.edEquipo small{font-size:11px;opacity:.8;font-weight:800}
+.edEquipo.completo small::after{content:" ✓"}
+.edEquipo.mas{border-style:dashed;color:var(--muted);box-shadow:none;background:color-mix(in srgb,var(--panel) 70%,transparent)}
+.edEqCab{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.edEqInput{flex:1;min-width:200px;font:inherit;font-size:19px;font-weight:800;border:0;border-bottom:2px solid var(--line);
+  background:transparent;color:var(--ink);padding:4px 2px}
+.edEqInput:focus{outline:none;border-bottom-color:var(--turquesa)}
+.edRoscoZona{display:grid;grid-template-columns:230px minmax(0,1fr);gap:20px;align-items:start}
+.edMini{position:sticky;top:96px;width:230px;height:230px;border-radius:50%;
+  background:radial-gradient(circle,color-mix(in srgb,var(--turquesa) 10%,var(--panel)) 55%,transparent 56%)}
+.edMiniL{position:absolute;width:30px;height:30px;transform:translate(-50%,-50%);border-radius:50%;border:2px solid var(--line);
+  background:var(--panel);font:inherit;font-weight:800;font-size:12.5px;cursor:pointer;color:var(--muted);padding:0;
+  transition:transform var(--rapido),background var(--rapido)}
+.edMiniL:hover{transform:translate(-50%,-50%) scale(1.15)}
+.edMiniL.bien{background:var(--verde);border-color:var(--verde);color:#fff}
+.edMiniL.mal{background:color-mix(in srgb,#E8A020 30%,var(--panel));border-color:#E8A020;color:#8A5600}
+.edMiniCentro{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
+.edMiniCentro b{font-size:26px;color:var(--ink)}
+.edMiniCentro small{font-size:12px;color:var(--muted);font-weight:700}
+.edFilas{display:grid;gap:6px}
+.edFila{display:grid;grid-template-columns:34px 88px minmax(0,1fr) minmax(120px,190px) 20px;gap:8px;align-items:center;
+  padding:6px 8px;border:2px solid transparent;border-radius:12px;background:var(--soft);transition:border-color var(--rapido)}
+.edFila:focus-within{border-color:var(--turquesa);background:var(--panel)}
+.edFila.mal{border-color:color-mix(in srgb,#E8A020 60%,transparent)}
+.edL{width:32px;height:32px;border-radius:50%;background:color-mix(in srgb,var(--turquesa) 75%,var(--ink));color:#fff;font-weight:800;
+  display:flex;align-items:center;justify-content:center;font-size:15px}
+.edFila.bien .edL{background:var(--verde)}
+.edModo{border:0;border-radius:8px;padding:7px 4px;font:inherit;font-size:10.5px;font-weight:800;cursor:pointer;letter-spacing:.3px}
+.edModo.empieza{background:color-mix(in srgb,var(--violeta) 16%,var(--panel));color:var(--violeta)}
+.edModo.contiene{background:color-mix(in srgb,var(--oro) 30%,var(--panel));color:#8A6200}
+.edDef{border-radius:6px;resize:none;overflow:hidden;border:0;background:transparent;font:inherit;font-size:14.5px;line-height:1.35;color:var(--ink);
+  padding:6px 4px;min-height:32px;width:100%}
+.edDef:focus,.edSol:focus{outline:none}
+.edDef:focus{border-color:transparent}
+.edSol{border:2px solid var(--line);border-radius:9px;padding:6px 9px;font:inherit;font-weight:800;font-size:14.5px;background:var(--panel);
+  color:var(--ink);min-width:0;width:100%}
+.edSol:focus{border-color:var(--verde)}
+.edEstadoFila{font-weight:900;text-align:center;cursor:default}
+.edFila.mal .edEstadoFila{color:#C27A0E}
+.edFila.bien .edEstadoFila{color:var(--verde)}
+
+.edAtajos{text-align:center;color:#fff;opacity:.72;font-size:12px;margin-top:6px}
+.edCargando{text-align:center;color:#fff;padding:60px 0;font-weight:800}
+.edAviso{position:fixed;left:50%;bottom:22px;z-index:70;transform:translate(-50%,30px);opacity:0;pointer-events:none;
+  display:flex;align-items:center;gap:12px;background:var(--ink);color:var(--panel);border-radius:999px;padding:10px 12px 10px 18px;
+  font-weight:800;font-size:14px;box-shadow:0 12px 30px rgba(0,0,0,.3);transition:opacity .2s,transform .2s;max-width:92vw}
+.edAviso.ver{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.edAviso .mini{background:var(--panel);color:var(--ink);border-color:transparent}
+
+@media (max-width:820px){
+  .edRoscoZona{grid-template-columns:1fr}
+  .edMini{position:relative;top:0;margin:0 auto;width:200px;height:200px}
+  .edFila{grid-template-columns:32px 84px minmax(0,1fr);}
+  .edFila .edSol{grid-column:2 / 4}
+  .edFila .edEstadoFila{display:none}
+  .edOps{grid-template-columns:1fr}
+}
+.edCarta.vaciaCarta .edAlerta{color:var(--muted);font-weight:600}
+
+/* altavoz de los efectos: mismo color que la nota de la música */
+.ic-altavoz{width:1.25em;height:1.25em;display:block}
+
+/* ---------- listas a toda altura (bancos y usuarios) ---------- */
+#vistaImportar .pagina.llena{height:100%;padding-bottom:22px}
+.pagina.llena #secBancos:not(.oculto),.pagina.llena #secUsuarios:not(.oculto){flex:1 1 auto;min-height:360px;
+  display:flex;flex-direction:column}
+.pagina.llena #listaBancos,.pagina.llena #usLista,.pagina.llena #usBancos{flex:1 1 auto;max-height:none;min-height:150px}
+.pagina.llena #usVista,.pagina.llena #usDetalle:not(.oculto){flex:1 1 auto;display:flex;flex-direction:column;min-height:0}
+.listaBancos.scrollable{align-content:start}
+
+/* =========================================================
+   MENÚ PRINCIPAL MÁS GRANDE EN PANTALLAS GRANDES
+   A partir de 1600×900 (proyectores y pantallas 1080p) el menú
+   principal y el de opciones son un 30 % más grandes. Son medidas
+   fijas, sin zoom ni escalado: no cuestan nada de rendimiento.
+   (Generado a partir de las reglas del menú multiplicando por 1,4.)
+   ========================================================= */
+@media (min-width:1600px) and (min-height:900px){
+#vistaMenu .menu{padding:33.8px 20.8px 23.4px;gap:28.6px}
+#vistaMenu .cabecera h1{font-size:clamp(39px,7.8vw,78px);text-shadow:0 7.8px 39px rgba(0,0,0,.35)}
+#vistaMenu .cabecera p{font-size:clamp(16.9px,2.2vw,22.1px);margin-top:5.2px}
+#vistaMenu .eleccion{grid-template-columns:repeat(auto-fit,minmax(351px,1fr));gap:23.4px;width:min(1118px,94vw)}
+#vistaMenu .ficha{padding:39px 28.6px;gap:11.7px;box-shadow:0 26px 58.5px rgba(10,6,45,.42);transform:translateY(26px)}
+#vistaMenu .ficha:hover{transform:translateY(-7.8px) scale(1.015);box-shadow:0 36.4px 71.5px rgba(10,6,45,.5)}
+#vistaMenu .ficha::after{height:247px;transform:translateY(31.2px)}
+#vistaMenu .ficha:hover::after{transform:translateY(5.2px)}
+#vistaMenu .ficha .icono{font-size:clamp(57.2px,7.8vw,83.2px);filter:drop-shadow(0 7.8px 18.2px rgba(0,0,0,.3))}
+#vistaMenu .ficha b{font-size:clamp(27.3px,3.6vw,36.4px)}
+#vistaMenu .ficha span{font-size:17.6px}
+#vistaMenu .ficha .tecla{top:15.6px;right:18.2px;padding:2px 11.7px;font-size:16.2px}
+#vistaMenu .pistaTeclas{font-size:16.9px}
+#vistaMenu .detalle{width:min(728px,94vw);padding:28.6px;gap:16.9px}
+#vistaMenu .detalle h2{font-size:clamp(27.3px,3.5vw,36.4px);gap:11.7px}
+#vistaMenu .detalle .pitch{font-size:18.9px}
+#vistaMenu .detalle .datos{gap:9.1px}
+#vistaMenu .pill{padding:5.2px 14.3px;font-size:15px}
+#vistaMenu .viz{height:153.4px}
+#vistaMenu .miniopts{inset:14.3px;gap:10.4px}
+#vistaMenu .miniopt{gap:9.1px;padding:0 13px;font-size:15px}
+#vistaMenu .miniopt b{width:27.3px;height:27.3px;font-size:14.3px}
+#vistaMenu .minicirc{width:135.2px;height:135.2px}
+#vistaMenu .minil{width:26px;height:26px;font-size:13px}
+#vistaMenu .minicentro{font-size:35.1px}
+#vistaMenu .filaEq{gap:14.3px}
+#vistaMenu .filaEq .etEq{font-size:16.9px}
+#vistaMenu .numEq{gap:7.8px;padding:5.2px}
+#vistaMenu .numEq button{width:49.4px;height:44.2px;font-size:19.5px}
+#vistaMenu .numEq button.sel{box-shadow:0 7.8px 18.2px rgba(0,0,0,.2)}
+#vistaMenu .filaEq .pistaEq{min-width:195px;font-size:15.6px}
+#vistaMenu .filaImp{gap:11.7px}
+#vistaMenu .filaImp .btnHoja{min-width:247px}
+#vistaMenu .filaSel{gap:11.7px}
+#vistaMenu select.banco{padding:15.6px;font-size:18.2px}
+#vistaMenu .jugar{padding:18.2px 31.2px;font-size:20.8px;box-shadow:0 13px 31.2px rgba(0,0,0,.2);gap:10.4px}
+#vistaMenu .btnHoja{padding:13px 18.2px;font-size:17.6px}
+#vistaMenu .volver{font-size:16.9px}
+#vistaMenu .barraabajo{gap:11.7px;margin-top:10.4px}
+#vistaMenu .estado{font-size:16.2px;gap:9.1px}
+#vistaMenu .punto{width:11.7px;height:11.7px}
+#vistaMenu .cuentaBar{top:18.2px;right:20.8px;gap:10.4px}
+#vistaMenu .cuentaBar .chip{padding:10.4px 19.5px;font-size:16.9px}
+#vistaMenu .cuentaBar .chip.on{box-shadow:0 7.8px 23.4px rgba(245,197,24,.35)}
+#vistaMenu .cbAdmin{margin:0 7.8px;padding:1px 7.8px;font-size:13px}
+#vistaMenu .cbLista{top:calc(100% + 9.1px);min-width:312px;padding:7.8px}
+#vistaMenu .cbOp{padding:13px 15.6px;font-size:18.2px}
+#vistaMenu .barraabajo .chip{padding:9.1px 18.2px;font-size:16.2px}
+#vistaMenu .creditos{font-size:16.2px;margin-top:2.6px}
+.aj-pie .btn{padding:15.6px 20.8px;font-size:19.5px}
+}
+/* pantallas grandes pero con poca altura útil (1080p con las barras del
+   navegador y de Windows): se recortan huecos verticales para que quepa todo */
+@media (min-width:1600px) and (min-height:900px) and (max-height:1040px){
+#vistaMenu .menu{padding:18px 20.8px 12px;gap:16px}
+#vistaMenu .detalle{padding:22px 28.6px;gap:13px}
+#vistaMenu .viz{height:128px}
+}

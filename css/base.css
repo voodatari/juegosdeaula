@@ -1,0 +1,313 @@
+/* =========================================================
+   Trivial & Rosco de aula · hoja de estilo común
+   Reglas de rendimiento (proyector de aula, portátil modesto):
+   - sólo se animan transform y opacity
+   - ninguna animación de feedback pasa de 420 ms
+   - nada bloquea la acción del maestro: el estado cambia ya,
+     la animación es decorado que va por detrás
+   ========================================================= */
+
+*{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+  /* ---- superficies y texto (los temas oscuros los cambian) ---- */
+  --panel:#ffffff;
+  --ink:#151A3A;
+  --muted:#7A8199;
+  --line:#E4E7F2;
+  --soft:#F4F6FC;
+  --calido:#FFF8EE;        /* cajas de "solución" */
+  --calido-borde:#F0C98A;
+  --calido-texto:#B8560C;
+  --calido-tenue:#C2610F;
+
+  /* ---- color de marca ---- */
+  --violeta:#6E5BE8;
+  --violeta2:#8B7CF6;
+  --turquesa:#2BC4B4;
+  --oro:#F5C518;
+  --coral:#FF5D73;
+  --verde:#22A45D;
+  --naranja:#FF8A3D;
+  --azul:#4C8DFF;
+
+  /* ---- fondo ---- */
+  --bgA:#6E5BE8;           /* halo superior izquierdo */
+  --bgB:#2BC4B4;           /* halo inferior derecho */
+  --bgC:#3A2E8C;           /* degradado base, arriba */
+  --bgD:#241a63;           /* degradado base, abajo */
+  --orb1:#7C5BF0; --orb2:#22C7B6; --orb3:#F5C518;
+
+  /* ---- equipos ---- */
+  --e1:#4C8DFF; --e2:#FF8A3D; --e3:#2BC4B4; --e4:#FF5D73;
+
+  --r-l:14px; --r-m:18px; --r-xl:26px;
+  --sombra:0 22px 55px rgba(12,8,50,.38);
+  --rapido:.16s cubic-bezier(.2,.8,.3,1);
+}
+
+/* =========================================================
+   TEMAS · solo cambian variables, nunca estructura
+   ========================================================= */
+
+/* Atardecer — naranjas y magentas, muy cálido en proyector */
+:root[data-tema="atardecer"]{
+  --violeta:#F2643C; --violeta2:#FF8E4A; --turquesa:#F7B32B; --oro:#FFD166;
+  --bgA:#FF7A3D; --bgB:#C74BD8; --bgC:#7C2D6B; --bgD:#3B1550;
+  --orb1:#FF8A5B; --orb2:#D45BE0; --orb3:#FFD166;
+}
+
+/* Bosque — verdes y dorado */
+:root[data-tema="bosque"]{
+  --violeta:#2FA36B; --violeta2:#49C98A; --turquesa:#8CC63F; --oro:#F2C14E;
+  --bgA:#31A96F; --bgB:#9BD84A; --bgC:#15532F; --bgD:#0A3220;
+  --orb1:#3FBF7F; --orb2:#A8DC55; --orb3:#F2C14E;
+}
+
+/* Océano — azules profundos y cian */
+:root[data-tema="oceano"]{
+  --violeta:#1E6FE0; --violeta2:#3E9BFF; --turquesa:#23D6D6; --oro:#FFD166;
+  --bgA:#2B7FE8; --bgB:#23D6D6; --bgC:#0B3E77; --bgD:#06233F;
+  --orb1:#2F86F0; --orb2:#2BD9D9; --orb3:#8CE0FF;
+}
+
+/* Caramelo — rosa y lila, el más infantil */
+:root[data-tema="caramelo"]{
+  --violeta:#E84E9C; --violeta2:#FF7BC0; --turquesa:#59C9F0; --oro:#FFC93C;
+  --bgA:#FF7EC4; --bgB:#66D3F5; --bgC:#B94BAE; --bgD:#6A3AA8;
+  --orb1:#FF8ACB; --orb2:#7ADCF7; --orb3:#FFE06B;
+}
+
+/* Pizarra — oscuro sobrio, el que mejor se ve con la luz apagada */
+:root[data-tema="pizarra"]{
+  --panel:#1B2136; --ink:#EDF2FF; --muted:#94A1C4; --line:#2E3755; --soft:#232B45;
+  --calido:#2A2438; --calido-borde:#6B5730; --calido-texto:#FFD79A; --calido-tenue:#F0B860;
+  --violeta:#4C8DFF; --violeta2:#7AB0FF; --turquesa:#2BC4B4; --oro:#FFD166;
+  --bgA:#26408B; --bgB:#1E6E68; --bgC:#121A2E; --bgD:#080C16;
+  --orb1:#2C4BA0; --orb2:#1E7A72; --orb3:#3A4A80;
+  --sombra:0 22px 55px rgba(0,0,0,.55);
+}
+
+/* Neón — fucsia y cian sobre casi negro */
+:root[data-tema="neon"]{
+  --panel:#151033; --ink:#F4ECFF; --muted:#A99BD6; --line:#2F2463; --soft:#1D1747;
+  --calido:#2A1748; --calido-borde:#6D3E8F; --calido-texto:#FFD1F5; --calido-tenue:#FF8AE2;
+  --violeta:#FF3CAC; --violeta2:#B14BF0; --turquesa:#00F5D4; --oro:#FEE440;
+  --bgA:#FF3CAC; --bgB:#00CFC1; --bgC:#1B0A3A; --bgD:#0A0418;
+  --orb1:#E23CC0; --orb2:#00D8C6; --orb3:#7A3CF0;
+  --sombra:0 22px 60px rgba(0,0,0,.6);
+}
+
+/* Arena — terracota y turquesa sobre tostado, cálido y tranquilo */
+:root[data-tema="arena"]{
+  --violeta:#D0703A; --violeta2:#E8915A; --turquesa:#2BB3A0; --oro:#F5C518;
+  --bgA:#E0A15A; --bgB:#3FB7A6; --bgC:#8F4F2C; --bgD:#4A2614;
+  --orb1:#E8904F; --orb2:#45C2B0; --orb3:#F5C518;
+}
+
+/* Galaxia — violeta y rosa nebulosa sobre noche cerrada */
+:root[data-tema="galaxia"]{
+  --panel:#18132D; --ink:#F2EEFF; --muted:#A79DCC; --line:#2E2654; --soft:#211B3E;
+  --calido:#2B2140; --calido-borde:#6E5A36; --calido-texto:#FFE0A3; --calido-tenue:#F2BF62;
+  --violeta:#8B7CF6; --violeta2:#B3A4FF; --turquesa:#5CE1E6; --oro:#FFD166;
+  --bgA:#5B3FD1; --bgB:#C2408F; --bgC:#140F2E; --bgD:#07050F;
+  --orb1:#6A4CE0; --orb2:#D0509C; --orb3:#4C8DFF;
+  --sombra:0 22px 60px rgba(0,0,0,.6);
+}
+
+html,body{height:100%}
+body{
+  font-family:"Baloo 2","Trebuchet MS","Segoe UI",system-ui,sans-serif;
+  color:var(--ink);
+  background:var(--bgD);
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ---------- fondo animado (dos capas, GPU, sin repintados) ---------- */
+.fondo{position:fixed;left:50%;top:50%;width:240vmax;height:240vmax;
+  margin:-120vmax 0 0 -120vmax;z-index:-2;overflow:hidden;
+  /* cuadrado enorme centrado: por mucho que gire, nunca asoma una esquina.
+     El giro lo lleva el JS en --fg, con la velocidad subiendo y bajando
+     poco a poco, así que arranca y se detiene sin cortes */
+  transform:rotate(var(--fg,0deg));
+  will-change:transform;
+  background:
+    radial-gradient(70vmax 52vmax at 34% 36%,var(--bgA) 0,transparent 62%),
+    radial-gradient(64vmax 48vmax at 64% 62%,var(--bgB) 0,transparent 58%),
+    linear-gradient(160deg,var(--bgC) 0%,var(--bgD) 100%);
+  transition:background .35s ease}
+/* segunda capa de color girando al revés: los tonos se cruzan y se funden
+   alrededor del centro en vez de quedarse quietos */
+.fondo::after{content:"";position:absolute;inset:0;pointer-events:none;
+  transform:rotate(var(--fg2,0deg));will-change:transform;opacity:.6;
+  background:
+    radial-gradient(46vmax 40vmax at 58% 38%,var(--orb1) 0,transparent 62%),
+    radial-gradient(42vmax 36vmax at 40% 60%,var(--orb2) 0,transparent 60%)}
+.fondo i{position:absolute;border-radius:50%;filter:blur(60px);opacity:.34;
+  will-change:transform;animation:deriva 22s ease-in-out infinite alternate}
+.fondo i:nth-child(1){width:34vmax;height:34vmax;left:34%;top:33%;background:var(--orb1)}
+.fondo i:nth-child(2){width:30vmax;height:30vmax;right:33%;bottom:33%;background:var(--orb2);animation-duration:28s;animation-delay:-6s}
+.fondo i:nth-child(3){width:20vmax;height:20vmax;left:55%;top:40%;background:var(--orb3);opacity:.16;animation-duration:34s;animation-delay:-12s}
+@keyframes deriva{from{transform:translate3d(0,0,0) scale(1)}to{transform:translate3d(4vmax,3vmax,0) scale(1.14)}}
+
+#confeti{position:fixed;inset:0;z-index:70;pointer-events:none}
+
+/* ---------- estructura ---------- */
+.escena{width:min(1240px,96vw);height:min(calc(100vh - 18px),860px);
+  margin:0 auto;display:flex;flex-direction:column;gap:10px;padding:9px 0}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.marca{display:flex;align-items:baseline;gap:10px;color:#fff;min-width:0}
+.marca b{font-size:clamp(17px,2.1vw,27px);letter-spacing:.4px;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;text-shadow:0 3px 14px rgba(0,0,0,.28)}
+.marca span{font-size:12px;opacity:.72;white-space:nowrap}
+.herramientas{display:flex;gap:7px;flex:0 0 auto}
+
+.chip{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.26);
+  padding:7px 14px;border-radius:999px;font-size:12.5px;font-weight:700;cursor:pointer;
+  backdrop-filter:blur(8px);transition:transform var(--rapido),background var(--rapido);
+  font-family:inherit;line-height:1.15;
+  display:inline-flex;align-items:center;justify-content:center;text-align:center;
+  text-decoration:none;white-space:nowrap}
+.chip:hover{background:rgba(255,255,255,.3);transform:translateY(-2px)}
+.chip:active{transform:translateY(0) scale(.96)}
+.chip.on{background:var(--oro);color:#1B1F3B;border-color:var(--oro);box-shadow:0 6px 18px rgba(245,197,24,.4)}
+
+/* ---------- marcador de equipos ---------- */
+.marcador{display:grid;grid-template-columns:repeat(var(--neq,4),1fr);gap:9px}
+.eq{position:relative;overflow:hidden;border-radius:var(--r-l);padding:8px 12px;color:#fff;
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);
+  display:flex;align-items:center;justify-content:space-between;gap:6px;
+  transition:transform .2s cubic-bezier(.2,.9,.3,1),background .2s,box-shadow .2s;
+  will-change:transform}
+.eq::before{content:"";position:absolute;inset:0 auto 0 0;width:5px;background:var(--c)}
+.eq .nm{font-size:clamp(13.5px,1.05vw,19px);font-weight:800;opacity:.95;padding-left:7px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* el nombre del equipo se puede cambiar pulsando sobre el: es un campo
+   de texto disfrazado de etiqueta, y al escribir en el las teclas del
+   juego quedan desactivadas solas */
+input.nm{font-family:inherit;color:inherit;background:transparent;border:0;
+  border-radius:6px;min-width:0;flex:1 1 auto;padding:2px 4px 2px 7px;cursor:text;
+  transition:background .15s,box-shadow .15s}
+input.nm::placeholder{color:inherit;opacity:.5}
+@media (hover:hover) and (pointer:fine){input.nm:hover{background:rgba(127,127,127,.18)}}
+input.nm:focus{outline:0;background:rgba(127,127,127,.22);box-shadow:0 0 0 2px var(--c)}
+.eq .der{display:flex;flex-direction:column;align-items:flex-end;gap:1px;flex:0 0 auto}
+.eq .pt{font-size:clamp(19px,2.5vw,30px);font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.eq .tm{font-size:10.5px;font-weight:700;opacity:.85;font-variant-numeric:tabular-nums}
+.eq .tm.bajo{color:#FFD2D8}
+.eq.turno{background:var(--panel);color:var(--ink);transform:translateY(-4px) scale(1.02);
+  box-shadow:0 14px 30px rgba(0,0,0,.34),0 0 0 3px var(--c)}
+.eq.turno .tm.bajo{color:#D93E52}
+.eq.fuera{opacity:.42;filter:grayscale(.5)}
+.eq .prog{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(255,255,255,.22)}
+.eq .prog i{display:block;height:100%;background:var(--c);transition:width .35s ease}
+.eq.sube .pt{animation:rebote .42s cubic-bezier(.2,1.4,.4,1)}
+@keyframes rebote{0%{transform:scale(1)}38%{transform:scale(1.5)}100%{transform:scale(1)}}
+.eq .flota{position:absolute;right:12px;top:6px;font-weight:800;font-size:15px;color:var(--verde);
+  pointer-events:none;animation:flota .85s ease-out forwards}
+@keyframes flota{0%{opacity:0;transform:translateY(6px)}20%{opacity:1}100%{opacity:0;transform:translateY(-22px)}}
+.eq .racha{position:absolute;left:50%;bottom:5px;transform:translateX(-50%);
+  font-size:10px;font-weight:800;letter-spacing:.6px;color:var(--oro);text-shadow:0 1px 6px rgba(0,0,0,.4)}
+.eq.turno .racha{color:#C2610F;text-shadow:none}
+
+/* ---------- panel blanco ---------- */
+.tarjeta{background:var(--panel);border-radius:var(--r-xl);box-shadow:var(--sombra);
+  padding:clamp(13px,1.9vw,22px);display:flex;flex-direction:column;gap:11px;min-height:0}
+
+.etiqueta{font-size:11px;font-weight:800;padding:5px 12px;border-radius:999px;letter-spacing:.6px}
+.etiqueta.test{background:color-mix(in srgb,var(--turquesa) 18%,var(--panel));color:color-mix(in srgb,var(--turquesa) 75%,var(--ink))}
+.etiqueta.escrita{background:var(--calido);color:var(--calido-tenue)}
+.numpreg{font-size:12px;font-weight:800;color:var(--muted);letter-spacing:1px}
+
+.barra{height:6px;background:var(--soft);border-radius:99px;overflow:hidden}
+.barra i{display:block;height:100%;width:0;border-radius:99px;
+  background:linear-gradient(90deg,var(--violeta),var(--turquesa));transition:width .35s ease}
+
+/* botones genéricos */
+/* los botones se centran a mano: si un contenedor lleva text-align:left
+   (el panel de ajustes, por ejemplo), la etiqueta se iba a la izquierda */
+.btn{border:0;border-radius:var(--r-l);padding:12px 16px;font-weight:800;font-size:15px;cursor:pointer;
+  background:var(--soft);color:var(--ink);font-family:inherit;line-height:1.2;
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;text-align:center;
+  text-decoration:none;
+  transition:transform var(--rapido),background var(--rapido),filter var(--rapido)}
+.btn:hover{background:color-mix(in srgb,var(--soft) 80%,var(--line));transform:translateY(-2px)}
+.btn:active{transform:translateY(0) scale(.98)}
+.btn.principal{background:linear-gradient(135deg,var(--violeta),var(--violeta2));color:#fff;
+  box-shadow:0 10px 24px rgba(110,91,232,.42)}
+.btn.principal:hover{filter:brightness(1.08)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+/* ---------- capa modal ---------- */
+.capa{position:fixed;inset:0;background:rgba(16,10,52,.82);display:none;align-items:center;
+  justify-content:center;z-index:60;backdrop-filter:blur(5px);padding:14px}
+.capa.ver{display:flex;animation:aparece .18s ease-out}
+/* los diálogos propios siempre por encima de cualquier otra ventana (p. ej. Ajustes) */
+#capaDialogo{z-index:85}
+@keyframes aparece{from{opacity:0}to{opacity:1}}
+.caja{background:var(--panel);border-radius:var(--r-xl);padding:26px 24px;text-align:center;
+  width:min(640px,94vw);max-height:min(92vh,92dvh);overflow:hidden;
+  display:flex;flex-direction:column;gap:0;
+  animation:surge .34s cubic-bezier(.2,1.25,.35,1)}
+/* si la lista de equipos no cabe, se desplaza ELLA y los botones siguen
+   siempre a la vista */
+.caja .filas{flex:1 1 auto;min-height:0;overflow:auto;
+  /* las filas entran deslizándose de lado: sin esto, durante esa entrada
+     asomaba un segundo una barra de desplazamiento horizontal. El margen
+     negativo con su relleno deja sitio para el movimiento sin recortarlo. */
+  overflow-x:hidden;margin:0 -24px;padding:4px 24px}
+.caja .capa-pie{flex:0 0 auto}
+@keyframes surge{from{transform:scale(.88) translateY(10px);opacity:0}to{transform:none;opacity:1}}
+.caja h2{font-size:clamp(21px,3vw,28px);margin-bottom:5px}
+.caja .sub{color:var(--muted);font-size:14px;margin-bottom:15px}
+.filas{display:grid;gap:8px}
+.fila-r{display:flex;align-items:center;justify-content:space-between;padding:11px 15px;
+  border-radius:var(--r-m);font-weight:800;color:#fff;opacity:0;
+  animation:entra .34s cubic-bezier(.2,.9,.3,1) forwards}
+/* el desplazamiento inicial va DENTRO del fotograma: si estuviera en la
+   regla base, un estilo de animación que no tocara transform dejaría la
+   fila desplazada a la izquierda para siempre */
+@keyframes entra{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:none}}
+.fila-r.si{background:var(--verde)}
+.fila-r.no{background:color-mix(in srgb,var(--muted) 55%,var(--panel))}
+.fila-r .r{font-size:18px;font-variant-numeric:tabular-nums}
+
+/* ---------- aviso de móvil ---------- */
+.soloPizarra{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;
+  padding:22px;background:linear-gradient(160deg,var(--bgC) 0%,var(--bgD) 100%)}
+.soloPizarra[hidden]{display:none}
+.caja-movil{width:min(440px,100%);background:var(--panel);border-radius:var(--r-xl);
+  padding:26px 22px;text-align:center;box-shadow:var(--sombra);
+  display:flex;flex-direction:column;gap:12px;align-items:center}
+.caja-movil .icono{font-size:52px;line-height:1}
+.caja-movil h1{font-size:23px;line-height:1.2;color:var(--ink)}
+.caja-movil p{font-size:14.5px;line-height:1.55;color:var(--ink);opacity:.9}
+.caja-movil p.chico{font-size:12.5px;color:var(--muted)}
+.caja-movil .btn{margin-top:4px}
+
+/* ---------- utilidades ---------- */
+.oculto{display:none !important}
+a.limpio{color:inherit;text-decoration:none}
+.cargando{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:14px;color:#fff;z-index:80;background:rgba(26,18,74,.92)}
+.spinner{width:42px;height:42px;border-radius:50%;border:4px solid rgba(255,255,255,.25);
+  border-top-color:#fff;animation:giro .7s linear infinite}
+@keyframes giro{to{transform:rotate(360deg)}}
+
+/* Si el sistema pide «reducir movimiento», la web arranca con el estilo
+   Calma (ver js/anim.js), pero si el maestro elige otro se respeta: aquí
+   ya no se apaga nada por decreto. El estilo «Calma» y el ajuste del
+   sistema hacen el mismo trabajo sin impedir los demás. */
+:root[data-anim="calma"] .fondo i{animation:none}
+
+/* ---------- aviso de «pulsa para que suene» ---------- */
+.aviso-sonido{position:fixed;left:50%;bottom:18px;z-index:80;pointer-events:none;
+  transform:translate(-50%,22px);opacity:0;
+  background:var(--oro);color:#1B1F3B;font-weight:800;font-size:13.5px;
+  padding:10px 20px;border-radius:999px;box-shadow:0 12px 30px rgba(0,0,0,.35);
+  transition:opacity .3s ease,transform .35s cubic-bezier(.2,1.2,.3,1)}
+.aviso-sonido.ver{opacity:1;transform:translate(-50%,0);animation:pulsoAviso 1.9s ease-in-out infinite}
+@keyframes pulsoAviso{0%,100%{box-shadow:0 12px 30px rgba(0,0,0,.35)}
+  50%{box-shadow:0 12px 42px color-mix(in srgb,var(--oro) 65%,transparent)}}

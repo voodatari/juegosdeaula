@@ -85,4 +85,4 @@ Hay que servir la carpeta con un servidor web (por ejemplo, la extensión *Live 
 
 ---
 
-Hecho por Daniel Vera (profe Dani).
+Hecho por profe Dani.

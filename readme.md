@@ -81,6 +81,7 @@ Hay que servir la carpeta con un servidor web (por ejemplo, la extensión *Live 
 
 - [supabase-js](https://github.com/supabase/supabase-js) (MIT): licencia en [`js/vendor/supabase-LICENSE.txt`](js/vendor/supabase-LICENSE.txt).
 - Tipografía [Baloo 2](https://fonts.google.com/specimen/Baloo+2) (SIL Open Font License), de Google Fonts.
+- Música creada con [Suno](https://suno.com).
 
 ---
 

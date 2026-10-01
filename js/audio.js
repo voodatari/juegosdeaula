@@ -163,13 +163,148 @@
   function elemento(nombre) {
     if (elementos[nombre]) return elementos[nombre];
     var p = PISTAS[nombre];
-    var a = new Audio(RUTA + p.archivo);
-    a.loop = p.bucle;
+    var a;
+    if (p.bucle && contexto()) a = new Bucle(p.archivo);
+    else {
+      a = new Audio(RUTA + p.archivo);
+      a.loop = p.bucle;
+      a.preload = 'none';
+    }
     a.volume = volumenDe(nombre);
-    a.preload = 'none';
     elementos[nombre] = a;
     return a;
   }
+
+  /* ---------------- bucles sin cortes ----------------
+     Con <audio loop>, Chrome deja una pequeña pausa cada vez que la pista
+     vuelve a empezar (no recorta el relleno que el codificador añade a
+     los MP3 y el salto al principio no es instantáneo); Firefox no.
+     Las pistas en bucle se decodifican con Web Audio y se repiten muestra
+     a muestra. Mientras se descargan y decodifican suena el <audio> de
+     siempre; al acabar esa vuelta entra el bucle sin cortes y, desde
+     entonces, esa pista ya va siempre así.
+     Por fuera se maneja igual que un <audio> (play, pause, volume,
+     paused, currentTime…), así que fundidos, subida del marcador,
+     volumen y focos funcionan sin cambios. En iPhone/iPad se queda con
+     <audio> (allí Web Audio da problemas, ver «análisis de graves»).
+     Si algo falla al decodificar, también se queda con <audio>. */
+  function contexto() {
+    if (esIOS) return null;
+    try { ACgraf = ACgraf || new (global.AudioContext || global.webkitAudioContext)(); }
+    catch (e) { return null; }
+    return ACgraf;
+  }
+
+  /* Recorta solo el silencio digital de los extremos (el relleno del
+     codificador, unos 50 ms como mucho): los silencios de la música no se tocan */
+  function limitesBucle(buffer) {
+    var tope = Math.min(2304, Math.floor(buffer.length / 4)), canales = [];
+    for (var c = 0; c < buffer.numberOfChannels; c++) canales.push(buffer.getChannelData(c));
+    function mudo(i) { return canales.every(function (d) { return Math.abs(d[i]) < 1e-4; }); }
+    var ini = 0, fin = buffer.length;
+    while (ini < tope && mudo(ini)) ini++;
+    while (buffer.length - fin < tope && mudo(fin - 1)) fin--;
+    return [ini / buffer.sampleRate, fin / buffer.sampleRate];
+  }
+
+  function Bucle(archivo) {
+    this.el = new Audio(RUTA + archivo);
+    this.el.loop = true;
+    this.el.preload = 'none';
+    this.src = this.el.src;
+    this.vol = 1;
+    this.parado = true;
+    this.buffer = null;       // la pista decodificada, cuando esté
+    this.decodificando = false;
+    this.fuente = null;       // el bucle de Web Audio que suena
+    this.ganancia = null;
+    this.inicio = 0;          // cuándo empezó a sonar el bucle (reloj de Web Audio)
+  }
+
+  Bucle.prototype.decodificar = function () {
+    if (this.buffer || this.decodificando) return;
+    this.decodificando = true;
+    var self = this;
+    fetch(this.src)
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); })
+      .then(function (d) { return ACgraf.decodeAudioData(d); })
+      .then(function (b) { self.listo(b); })
+      .catch(function () { /* sin bucle perfecto: sigue el <audio loop> de siempre */ });
+  };
+
+  Bucle.prototype.listo = function (buffer) {
+    this.buffer = buffer;
+    this.limites = limitesBucle(buffer);
+    var el = this.el;
+    /* si no está sonando, la próxima vez que suene ya irá sin cortes */
+    if (this.parado || el.paused || !isFinite(el.duration)) return;
+    /* sonando con <audio>: termina esta vuelta y el bucle entra justo al acabar */
+    el.loop = false;
+    this.arrancar(ACgraf.currentTime + Math.max(0, el.duration - el.currentTime));
+  };
+
+  Bucle.prototype.arrancar = function (cuando) {
+    var f = ACgraf.createBufferSource();
+    f.buffer = this.buffer;
+    f.loop = true;
+    f.loopStart = this.limites[0];
+    f.loopEnd = this.limites[1];
+    if (!this.ganancia) {
+      this.ganancia = ACgraf.createGain();
+      this.ganancia.connect(analizador || ACgraf.destination);   // también mueve los focos
+    }
+    this.ganancia.gain.value = this.vol;
+    f.connect(this.ganancia);
+    f.start(cuando, this.limites[0]);
+    this.fuente = f;
+    this.inicio = cuando;
+  };
+
+  Bucle.prototype.play = function () {
+    this.parado = false;
+    if (this.buffer) {
+      if (!this.fuente) { this.el.pause(); this.arrancar(ACgraf.currentTime); }
+      return ACgraf.resume();
+    }
+    this.decodificar();
+    return this.el.play();
+  };
+
+  Bucle.prototype.pause = function () {
+    this.parado = true;
+    try { this.el.pause(); } catch (e) {}
+    if (this.fuente) {
+      try { this.fuente.stop(); } catch (e) {}
+      this.fuente = null;
+    }
+  };
+
+  Object.defineProperties(Bucle.prototype, {
+    volume: {
+      get: function () { return this.vol; },
+      set: function (v) {
+        this.vol = v;
+        this.el.volume = v;
+        if (this.ganancia) this.ganancia.gain.value = v;
+      }
+    },
+    paused: {
+      get: function () {
+        if (this.parado) return true;
+        return this.fuente ? ACgraf.state !== 'running' : this.el.paused;
+      }
+    },
+    currentTime: {
+      get: function () {
+        var t = this.fuente ? ACgraf.currentTime - this.inicio : -1;
+        if (t < 0) return this.el.currentTime;
+        var a = this.limites[0], d = this.limites[1] - a;
+        return a + (t % d);
+      },
+      set: function (v) { try { this.el.currentTime = v; } catch (e) {} }
+    },
+    error: { get: function () { return this.el.error; } }
+  });
 
   function parar(nombre) {
     var a = elementos[nombre];
@@ -183,7 +318,7 @@
     if (!actual || !musicaOn) return;
     var a = elemento(actual);
     if (!sinVolumen) a.volume = volumenDe(actual);
-    engancharAnalisis(a);
+    engancharAnalisis(a.el || a);   // un Bucle lleva dentro su <audio>; su bucle ya va al analizador
     /* La música pasa por el analizador de los focos (Web Audio). Chrome
        crea ese «contexto de audio» dormido si aún no ha habido ningún
        clic, y NO lo despierta solo: el <audio> se pone en marcha pero

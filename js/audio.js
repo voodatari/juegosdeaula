@@ -164,7 +164,7 @@
     if (elementos[nombre]) return elementos[nombre];
     var p = PISTAS[nombre];
     var a;
-    if (p.bucle && contexto()) a = new Bucle(p.archivo);
+    if (p.bucle && BUCLE_WEB_AUDIO && contexto()) a = new Bucle(p.archivo);
     else {
       a = new Audio(RUTA + p.archivo);
       a.loop = p.bucle;
@@ -179,15 +179,20 @@
      Con <audio loop>, Chrome deja una pequeña pausa cada vez que la pista
      vuelve a empezar (no recorta el relleno que el codificador añade a
      los MP3 y el salto al principio no es instantáneo); Firefox no.
-     Las pistas en bucle se decodifican con Web Audio y se repiten muestra
-     a muestra. Mientras se descargan y decodifican suena el <audio> de
-     siempre; al acabar esa vuelta entra el bucle sin cortes y, desde
-     entonces, esa pista ya va siempre así.
+     Firefox lo hace perfecto, así que allí se deja el <audio loop>.
+     En los demás, las pistas en bucle se decodifican con Web Audio y se
+     repiten muestra a muestra. Para que ya la primera vuelta vaya sin
+     cortes, la música espera a que la pista esté lista (como mucho
+     ESPERA_BUCLE ms). Si tarda más, suena el <audio> de siempre y al
+     acabar esa vuelta entra el bucle sin cortes.
      Por fuera se maneja igual que un <audio> (play, pause, volume,
      paused, currentTime…), así que fundidos, subida del marcador,
      volumen y focos funcionan sin cambios. En iPhone/iPad se queda con
      <audio> (allí Web Audio da problemas, ver «análisis de graves»).
      Si algo falla al decodificar, también se queda con <audio>. */
+  var ESPERA_BUCLE = 1500;
+  var BUCLE_WEB_AUDIO = !/firefox/i.test(navigator.userAgent);
+
   function contexto() {
     if (esIOS) return null;
     try { ACgraf = ACgraf || new (global.AudioContext || global.webkitAudioContext)(); }
@@ -219,6 +224,7 @@
     this.fuente = null;       // el bucle de Web Audio que suena
     this.ganancia = null;
     this.inicio = 0;          // cuándo empezó a sonar el bucle (reloj de Web Audio)
+    this.espera = null;       // esperando a la pista decodificada para empezar sin cortes
   }
 
   Bucle.prototype.decodificar = function () {
@@ -228,17 +234,32 @@
     fetch(this.src)
       .then(function (r) { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); })
       .then(function (d) { return ACgraf.decodeAudioData(d); })
-      .then(function (b) { self.listo(b); })
-      .catch(function () { /* sin bucle perfecto: sigue el <audio loop> de siempre */ });
+      .then(function (b) { self.decodificando = false; self.listo(b); })
+      .catch(function () {
+        /* sin bucle perfecto: sigue el <audio loop> de siempre (si estaba esperando, ya) */
+        self.decodificando = false;
+        if (self.espera) {
+          clearTimeout(self.espera);
+          self.espera = null;
+          if (!self.parado) { var p = self.el.play(); if (p && p.catch) p.catch(function () {}); }
+        }
+      });
   };
 
   Bucle.prototype.listo = function (buffer) {
     this.buffer = buffer;
     this.limites = limitesBucle(buffer);
     var el = this.el;
-    /* si no está sonando, la próxima vez que suene ya irá sin cortes */
-    if (this.parado || el.paused || !isFinite(el.duration)) return;
-    /* sonando con <audio>: termina esta vuelta y el bucle entra justo al acabar */
+    if (this.parado) return;   // la próxima vez que suene ya irá sin cortes
+    /* lo normal: llega mientras se espera y empieza ya sin cortes */
+    if (this.espera || el.paused || !isFinite(el.duration)) {
+      clearTimeout(this.espera);
+      this.espera = null;
+      el.pause();
+      this.arrancar(ACgraf.currentTime);
+      return;
+    }
+    /* tardó en llegar y ya suena el <audio>: termina esta vuelta y el bucle entra al acabar */
     el.loop = false;
     this.arrancar(ACgraf.currentTime + Math.max(0, el.duration - el.currentTime));
   };
@@ -267,11 +288,24 @@
       return ACgraf.resume();
     }
     this.decodificar();
+    if (this.decodificando) {
+      /* se espera un poco a la pista decodificada; si tarda, suena el <audio> */
+      if (!this.espera) {
+        var self = this;
+        this.espera = setTimeout(function () {
+          self.espera = null;
+          if (!self.parado && !self.fuente) { var p = self.el.play(); if (p && p.catch) p.catch(function () {}); }
+        }, ESPERA_BUCLE);
+      }
+      return Promise.resolve();
+    }
     return this.el.play();
   };
 
   Bucle.prototype.pause = function () {
     this.parado = true;
+    clearTimeout(this.espera);
+    this.espera = null;
     try { this.el.pause(); } catch (e) {}
     if (this.fuente) {
       try { this.fuente.stop(); } catch (e) {}
@@ -291,6 +325,7 @@
     paused: {
       get: function () {
         if (this.parado) return true;
+        if (this.espera) return false;
         return this.fuente ? ACgraf.state !== 'running' : this.el.paused;
       }
     },
